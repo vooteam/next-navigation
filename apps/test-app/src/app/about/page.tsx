@@ -43,7 +43,8 @@ export default function About() {
             lineHeight: '1.6',
           }}
         >
-          📖 Learn more about the @vooteam/next-navigation library and its capabilities for async router operations.
+          📖 Learn more about the @vooteam/next-navigation library and its
+          capabilities for async router operations.
         </p>
       </div>
 

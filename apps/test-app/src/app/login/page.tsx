@@ -43,7 +43,8 @@ export default function Login() {
             lineHeight: '1.6',
           }}
         >
-          🔐 This page demonstrates navigation.replace() functionality and form layouts.
+          🔐 This page demonstrates navigation.replace() functionality and form
+          layouts.
         </p>
       </div>
 

@@ -43,7 +43,8 @@ export default function Products() {
             lineHeight: '1.6',
           }}
         >
-          📦 Explore demo products and test navigation with custom options like scroll control.
+          📦 Explore demo products and test navigation with custom options like
+          scroll control.
         </p>
       </div>
 

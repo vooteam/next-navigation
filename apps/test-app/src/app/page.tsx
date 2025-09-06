@@ -46,7 +46,9 @@ export default function Page() {
             lineHeight: '1.6',
           }}
         >
-          🚀 Test the async navigation hook with built-in progress bars and loading states. Try navigating between pages using both the header navigation and the demo buttons below.
+          🚀 Test the async navigation hook with built-in progress bars and
+          loading states. Try navigating between pages using both the header
+          navigation and the demo buttons below.
         </p>
         <div
           style={{
