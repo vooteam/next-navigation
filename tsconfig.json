@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./apps/test-app"
+    },
+    {
+      "path": "./packages/next-navigation"
     }
   ]
 }
