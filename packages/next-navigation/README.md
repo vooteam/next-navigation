@@ -1,8 +1,8 @@
 # @vooteam/next-navigation
 
-A Next.js navigation hook library for async router operations.
+A Next.js navigation hook library for async router operations with built-in progress bars.
 
-This library provides a simple React hook that wraps Next.js router functionality with async/await support for push, replace, and back operations.
+This library provides a simple React hook that wraps Next.js router functionality with async/await support for push, replace, and back operations, plus optional progress bar integration.
 
 ## Installation
 
@@ -14,7 +14,9 @@ pnpm add @vooteam/next-navigation
 yarn add @vooteam/next-navigation
 ```
 
-## Usage
+## Quick Start
+
+### Basic Usage
 
 ```typescript
 'use client';
@@ -47,6 +49,50 @@ function MyComponent() {
 
       {navigation.isPending && <p>Navigation in progress...</p>}
     </div>
+  );
+}
+```
+
+### With Progress Bar
+
+```typescript
+// layout.tsx
+import { ProgressProvider } from '@vooteam/next-navigation';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <ProgressProvider
+          config={{
+            color: '#10b981',
+            height: 4,
+            showSpinner: true,
+          }}
+        >
+          {children}
+        </ProgressProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+```typescript
+// Your component
+import { useNavigation } from '@vooteam/next-navigation';
+
+function MyComponent() {
+  const navigation = useNavigation({ enableProgress: true });
+
+  const handleNavigate = async () => {
+    await navigation.push('/about'); // Progress bar shows automatically
+  };
+
+  return (
+    <button onClick={handleNavigate} disabled={navigation.isPending}>
+      Navigate with Progress
+    </button>
   );
 }
 ```

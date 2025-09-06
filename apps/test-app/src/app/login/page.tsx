@@ -1,20 +1,52 @@
 'use client';
 
 import Link from 'next/link';
-import NavigationLogger from '../components/NavigationLogger';
 import { usePageLogger } from '../hooks/usePageLogger';
 
 export default function Login() {
   usePageLogger('Login Page');
   return (
-    <div
-      style={{
-        maxWidth: '800px',
-        margin: '0 auto',
-        padding: '2rem',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-      }}
-    >
+    <div>
+      {/* Page Header */}
+      <div
+        style={{
+          textAlign: 'center',
+          marginBottom: '3rem',
+          padding: '3rem 2rem',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '16px',
+          color: 'white',
+          boxShadow:
+            '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        }}
+      >
+        <h1
+          style={{
+            fontSize: '2.5rem',
+            fontWeight: '800',
+            marginBottom: '1rem',
+            background: 'linear-gradient(45deg, #fff, #e2e8f0)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          Login Page
+        </h1>
+        <p
+          style={{
+            fontSize: '1.125rem',
+            marginBottom: '2rem',
+            opacity: 0.9,
+            maxWidth: '600px',
+            margin: '0 auto 2rem',
+            lineHeight: '1.6',
+          }}
+        >
+          🔐 This page demonstrates navigation.replace() functionality and form layouts.
+        </p>
+      </div>
+
       <div
         style={{
           backgroundColor: '#fff',
@@ -48,16 +80,16 @@ export default function Login() {
             </svg>
           </div>
           <div>
-            <h1
+            <h2
               style={{
-                fontSize: '2rem',
+                fontSize: '1.5rem',
                 fontWeight: '700',
                 color: '#1f2937',
                 margin: 0,
               }}
             >
-              Login Page
-            </h1>
+              Login Form
+            </h2>
             <p
               style={{
                 fontSize: '1rem',
@@ -68,51 +100,6 @@ export default function Login() {
               Reached via navigation.replace()
             </p>
           </div>
-        </div>
-
-        <div
-          style={{
-            padding: '1.5rem',
-            backgroundColor: '#fef2f2',
-            borderRadius: '8px',
-            border: '1px solid #fecaca',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <h3
-            style={{
-              fontSize: '1.1rem',
-              fontWeight: '600',
-              color: '#dc2626',
-              marginBottom: '0.5rem',
-            }}
-          >
-            🔄 Replace Navigation Demo
-          </h3>
-          <p
-            style={{
-              fontSize: '1rem',
-              color: '#374151',
-              lineHeight: '1.6',
-              margin: 0,
-            }}
-          >
-            You reached this page using{' '}
-            <code
-              style={{
-                backgroundColor: '#fecaca',
-                padding: '0.2rem 0.4rem',
-                borderRadius: '4px',
-                fontSize: '0.9rem',
-                fontFamily: 'Monaco, "Lucida Console", monospace',
-              }}
-            >
-              navigation.replace()
-            </code>
-            . This means the previous page was replaced in the browser history.
-            Try using the browser's back button - you won't go back to the
-            previous page!
-          </p>
         </div>
 
         <div
@@ -228,8 +215,6 @@ export default function Login() {
           </Link>
         </div>
       </div>
-
-      <NavigationLogger />
     </div>
   );
 }

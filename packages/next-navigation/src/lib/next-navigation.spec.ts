@@ -4,10 +4,29 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 vi.mock('react', () => ({
   useCallback: vi.fn((fn) => fn),
   useTransition: vi.fn(() => [false, vi.fn()]),
+  createContext: vi.fn(() => ({
+    Provider: vi.fn(({ children }) => children),
+    Consumer: vi.fn(),
+  })),
+  useContext: vi.fn(() => ({
+    start: vi.fn(),
+    complete: vi.fn(),
+    isLoading: false,
+  })),
+  useState: vi.fn(() => [false, vi.fn()]),
+  useEffect: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
+}));
+
+vi.mock('./progress-provider', () => ({
+  useProgress: vi.fn(() => ({
+    start: vi.fn(),
+    complete: vi.fn(),
+    isLoading: false,
+  })),
 }));
 
 // Import after mocking

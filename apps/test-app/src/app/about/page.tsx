@@ -1,20 +1,52 @@
 'use client';
 
 import Link from 'next/link';
-import NavigationLogger from '../components/NavigationLogger';
 import { usePageLogger } from '../hooks/usePageLogger';
 
 export default function About() {
   usePageLogger('About Page');
   return (
-    <div
-      style={{
-        maxWidth: '800px',
-        margin: '0 auto',
-        padding: '2rem',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-      }}
-    >
+    <div>
+      {/* Page Header */}
+      <div
+        style={{
+          textAlign: 'center',
+          marginBottom: '3rem',
+          padding: '3rem 2rem',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '16px',
+          color: 'white',
+          boxShadow:
+            '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        }}
+      >
+        <h1
+          style={{
+            fontSize: '2.5rem',
+            fontWeight: '800',
+            marginBottom: '1rem',
+            background: 'linear-gradient(45deg, #fff, #e2e8f0)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          About Page
+        </h1>
+        <p
+          style={{
+            fontSize: '1.125rem',
+            marginBottom: '2rem',
+            opacity: 0.9,
+            maxWidth: '600px',
+            margin: '0 auto 2rem',
+            lineHeight: '1.6',
+          }}
+        >
+          📖 Learn more about the @vooteam/next-navigation library and its capabilities for async router operations.
+        </p>
+      </div>
+
       <div
         style={{
           backgroundColor: '#fff',
@@ -48,16 +80,16 @@ export default function About() {
             </svg>
           </div>
           <div>
-            <h1
+            <h2
               style={{
-                fontSize: '2rem',
+                fontSize: '1.5rem',
                 fontWeight: '700',
                 color: '#1f2937',
                 margin: 0,
               }}
             >
-              About Page
-            </h1>
+              About Content
+            </h2>
             <p
               style={{
                 fontSize: '1rem',
@@ -68,40 +100,6 @@ export default function About() {
               Navigation successful!
             </p>
           </div>
-        </div>
-
-        <div
-          style={{
-            padding: '1.5rem',
-            backgroundColor: '#f8fafc',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <p
-            style={{
-              fontSize: '1rem',
-              color: '#374151',
-              lineHeight: '1.6',
-              margin: 0,
-            }}
-          >
-            🎉 Great! You've successfully navigated to the About page using the{' '}
-            <code
-              style={{
-                backgroundColor: '#e2e8f0',
-                padding: '0.2rem 0.4rem',
-                borderRadius: '4px',
-                fontSize: '0.9rem',
-                fontFamily: 'Monaco, "Lucida Console", monospace',
-              }}
-            >
-              @vooteam/next-navigation
-            </code>{' '}
-            hook. This demonstrates the async navigation capabilities with
-            built-in loading states.
-          </p>
         </div>
 
         <div
@@ -155,8 +153,6 @@ export default function About() {
           </Link>
         </div>
       </div>
-
-      <NavigationLogger />
     </div>
   );
 }
