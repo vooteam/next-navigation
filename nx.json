@@ -5,7 +5,10 @@
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.mjs"
+      "!{projectRoot}/eslint.config.mjs",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/src/test-setup.[jt]s"
     ],
     "sharedGlobals": []
   },
@@ -40,6 +43,20 @@
       "options": {
         "targetName": "lint"
       }
+    },
+    {
+      "plugin": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "testTargetName": "test",
+        "serveTargetName": "serve",
+        "devTargetName": "dev",
+        "previewTargetName": "preview",
+        "serveStaticTargetName": "serve-static",
+        "typecheckTargetName": "typecheck",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
     }
   ],
   "generators": {
@@ -48,6 +65,21 @@
         "style": "css",
         "linter": "eslint"
       }
+    }
+  },
+  "targetDefaults": {
+    "@nx/js:swc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    }
+  },
+  "release": {
+    "version": {
+      "preVersionCommand": "pnpm dlx nx run-many -t build"
     }
   }
 }

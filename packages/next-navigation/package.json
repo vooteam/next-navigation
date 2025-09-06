@@ -1,0 +1,68 @@
+{
+  "name": "@vooteam/next-navigation",
+  "version": "0.0.1",
+  "description": "A Next.js navigation and authentication library for Vooteam projects",
+  "author": "Vooteam",
+  "license": "MIT",
+  "homepage": "https://github.com/vooteam/next-navigation",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vooteam/next-navigation.git",
+    "directory": "packages/next-navigation"
+  },
+  "bugs": {
+    "url": "https://github.com/vooteam/next-navigation/issues"
+  },
+  "keywords": [
+    "nextjs",
+    "navigation",
+    "authentication",
+    "react",
+    "vooteam"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "nx build @vooteam/next-navigation",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "nx lint @vooteam/next-navigation",
+    "prepublishOnly": "npm run build"
+  },
+  "nx": {
+    "sourceRoot": "packages/next-navigation/src",
+    "targets": {
+      "build": {
+        "executor": "@nx/js:swc",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "packages/next-navigation/dist",
+          "main": "packages/next-navigation/src/index.ts",
+          "tsConfig": "packages/next-navigation/tsconfig.lib.json",
+          "skipTypeCheck": true,
+          "stripLeadingPaths": true
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@swc/helpers": "~0.5.11"
+  }
+}

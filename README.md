@@ -1,101 +1,220 @@
-# NextNavigation
+# Vooteam Next Navigation
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+[![CI/CD Pipeline](https://github.com/vooteam/next-navigation/actions/workflows/ci.yml/badge.svg)](https://github.com/vooteam/next-navigation/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/%40vooteam%2Fnext-navigation.svg)](https://www.npmjs.com/package/@vooteam/next-navigation)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+A Next.js navigation and authentication library for Vooteam projects, built with [Nx](https://nx.dev).
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## 📦 Packages
 
-## Run tasks
+- **[@vooteam/next-navigation](./packages/next-navigation)** - Main navigation and authentication library
+- **[test-app](./apps/test-app)** - Next.js test application for development
 
-To run the dev server for your app, use:
+## 🚀 Quick Start
 
-```sh
-npx nx dev test-app
+### Installation
+
+```bash
+npm install @vooteam/next-navigation
+# or
+pnpm add @vooteam/next-navigation
+# or
+yarn add @vooteam/next-navigation
 ```
 
-To create a production bundle:
+### Usage
 
-```sh
-npx nx build test-app
+```typescript
+import { AuthSession, createAuthConfig } from '@vooteam/next-navigation';
+
+// Create auth configuration
+const config = createAuthConfig({
+  baseUrl: process.env.NEXTAUTH_URL,
+  secret: process.env.NEXTAUTH_SECRET,
+});
+
+// Create auth session
+const authSession = new AuthSession(config);
+
+// Sign in user
+const user = await authSession.signIn({
+  email: 'user@example.com',
+  password: 'password',
+});
 ```
 
-To see all available targets to run for a project, run:
+## 🛠️ Development
 
-```sh
-npx nx show project test-app
+### Prerequisites
+
+- Node.js 18.x or 20.x
+- pnpm (recommended) or npm
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/vooteam/next-navigation.git
+cd next-navigation
+
+# Install dependencies
+pnpm install
+
+# Build the library
+pnpm run build
+
+# Run tests
+pnpm run test
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### Available Scripts
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+| Script | Description |
+|--------|-------------|
+| `pnpm run dev` | Start the Next.js test app for development |
+| `pnpm run dev:lib` | Build the library in watch mode for development |
+| `pnpm run build` | Build the @vooteam/next-navigation package |
+| `pnpm run build:app` | Build the Next.js test app |
+| `pnpm run test` | Run tests for the package |
+| `pnpm run test:watch` | Run tests in watch mode for development |
+| `pnpm run lint` | Run ESLint on the package |
+| `pnpm run build:all` | Build all projects in the workspace |
+| `pnpm run test:all` | Run tests for all projects |
+| `pnpm run lint:all` | Run ESLint on all projects |
+| `pnpm run changeset` | Add a new changeset for version management |
+| `pnpm run changeset:version` | Apply changesets and update package versions |
+| `pnpm run changeset:publish` | Publish packages to NPM |
+| `pnpm run changeset:status` | Check the status of changesets |
+| `pnpm run release` | Build, test, and publish packages |
 
-## Add new projects
+### Development Workflow
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+1. **Start the development server** with `pnpm run dev`
+2. **Make changes** to the library in `packages/next-navigation/`
+3. **Add a changeset** with `pnpm run changeset` (describe your changes)
+4. **Run tests** with `pnpm run test` or `pnpm run test:watch`
+4. **Build the package** with `pnpm run build`
+5. **Test changes** in the running Next.js app at `http://localhost:3000`
 
-Use the plugin's generator to create new projects.
+## 🚀 CI/CD & Publishing
 
-To generate a new application, use:
+### Automated CI/CD
 
-```sh
-npx nx g @nx/next:app demo
+This project uses GitHub Actions and Changesets for continuous integration and deployment:
+
+- **CI Pipeline** (`.github/workflows/ci.yml`): Runs on every push and PR
+  - Tests on Node.js 18.x and 20.x
+  - Runs linting, testing, and building
+  - Uploads test coverage
+
+- **Changeset Release** (`.github/workflows/changeset-release.yml`): Automated releases
+  - Triggered on pushes to main branch
+  - Uses changesets for version management
+  - Automatically creates release PRs
+  - Publishes to NPM when changesets are merged
+
+- **Manual Publish** (`.github/workflows/manual-publish.yml`): For testing
+  - Supports dry-run mode
+  - Allows custom NPM tags (latest, beta, alpha)
+
+### Publishing a New Version with Changesets
+
+#### Step 1: Create a Changeset
+
+When you make changes that should trigger a release, create a changeset:
+
+```bash
+pnpm run changeset
 ```
 
-To generate a new library, use:
+This will prompt you to:
+- Select which packages changed
+- Choose the type of change (patch, minor, major)
+- Write a summary of the changes
 
-```sh
-npx nx g @nx/react:lib mylib
+#### Step 2: Commit and Push
+
+```bash
+git add .changeset/
+git commit -m "feat: add new feature"
+git push origin your-branch
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+#### Step 3: Merge to Main
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+When your PR is merged to main, the changeset release workflow will:
+- Create a "Version Packages" PR with updated versions and changelog
+- When you merge this PR, it automatically publishes to NPM
 
-## Set up CI!
+### Manual Release (Alternative)
 
-### Step 1
+1. Update the version in `packages/next-navigation/package.json`
+2. Update `CHANGELOG.md` with the new version
+3. Create and push a version tag:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+4. The release workflow will automatically publish to NPM
 
-To connect to Nx Cloud, run the following command:
+#### Option 2: Manual Release
 
-```sh
-npx nx connect
+1. Go to **Actions** → **Manual Publish** in GitHub
+2. Click **Run workflow**
+3. Choose dry-run mode for testing, or disable for actual publish
+4. Select the NPM tag (latest, beta, alpha)
+
+### NPM Setup
+
+To publish to NPM, you need to set up the `NPM_TOKEN` secret in your repository:
+
+1. Generate an NPM token at [npmjs.com](https://www.npmjs.com/settings/tokens)
+2. Add it as `NPM_TOKEN` in your repository secrets
+3. Ensure your NPM account has access to publish `@vooteam` scoped packages
+
+## 📁 Project Structure
+
+```
+next-navigation/
+├── packages/
+│   └── next-navigation/          # Main library package
+│       ├── src/
+│       │   ├── lib/
+│       │   │   ├── next-navigation.ts     # Core library code
+│       │   │   └── next-navigation.spec.ts # Tests
+│       │   └── index.ts          # Package exports
+│       ├── package.json          # Package configuration
+│       ├── README.md            # Package documentation
+│       └── dist/                # Build output
+├── apps/
+│   └── test-app/                # Next.js test application
+├── .github/
+│   ├── workflows/               # GitHub Actions workflows
+│   └── ISSUE_TEMPLATE/         # Issue templates
+├── CHANGELOG.md                 # Version history
+└── nx.json                     # Nx workspace configuration
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+## 🤝 Contributing
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and add tests
+4. Run tests: `pnpm run test:all`
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
-### Step 2
+## 📄 License
 
-Use the following command to configure a CI workflow for your workspace:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```sh
-npx nx g ci-workflow
-```
+## 🔗 Useful Links
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Package Documentation](./packages/next-navigation/README.md)
+- [Changeset Guide](./docs/CHANGESET_GUIDE.md)
+- [Changelog](./CHANGELOG.md)
+- [Contributing Guidelines](./CONTRIBUTING.md)
+- [Nx Documentation](https://nx.dev)
+- [NPM Package](https://www.npmjs.com/package/@vooteam/next-navigation)
