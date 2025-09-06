@@ -1,4 +1,5 @@
 import styles from './page.module.css';
+import NavigationDemo from './navigation-demo';
 
 export default function Index() {
   /*
@@ -16,6 +17,8 @@ export default function Index() {
               Welcome @next-navigation/test-app 👋
             </h1>
           </div>
+
+          <NavigationDemo />
 
           <div id="hero" className="rounded">
             <div className="text-container">

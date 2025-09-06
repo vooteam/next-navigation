@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/vitest",
     "types": [
@@ -9,7 +9,9 @@
       "node",
       "vitest"
     ],
-    "forceConsistentCasingInFileNames": true
+    "noEmit": true,
+    "declarationMap": false,
+    "sourceMap": false
   },
   "include": [
     "vite.config.ts",
@@ -25,10 +27,5 @@
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx",
     "src/**/*.d.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.lib.json"
-    }
   ]
 }

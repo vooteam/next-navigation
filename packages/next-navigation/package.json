@@ -1,7 +1,7 @@
 {
   "name": "@vooteam/next-navigation",
-  "version": "0.0.1",
-  "description": "A Next.js navigation and authentication library for Vooteam projects",
+  "version": "1.0.0",
+  "description": "A Next.js navigation hook library for async router operations",
   "author": "Vooteam",
   "license": "MIT",
   "homepage": "https://github.com/vooteam/next-navigation",
@@ -16,8 +16,10 @@
   "keywords": [
     "nextjs",
     "navigation",
-    "authentication",
+    "router",
     "react",
+    "hook",
+    "async",
     "vooteam"
   ],
   "type": "module",
@@ -38,31 +40,26 @@
     "!**/*.tsbuildinfo"
   ],
   "scripts": {
-    "build": "nx build @vooteam/next-navigation",
+    "build": "npm run clean && npm run build:js && npm run build:types",
+    "build:js": "swc src -d dist --strip-leading-paths --ignore **/*.test.ts,**/*.spec.ts,**/*.test.tsx,**/*.spec.tsx",
+    "build:types": "tsc -p tsconfig.lib.json",
+    "clean": "rm -rf dist",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "nx lint @vooteam/next-navigation",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
-  "nx": {
-    "sourceRoot": "packages/next-navigation/src",
-    "targets": {
-      "build": {
-        "executor": "@nx/js:swc",
-        "outputs": [
-          "{options.outputPath}"
-        ],
-        "options": {
-          "outputPath": "packages/next-navigation/dist",
-          "main": "packages/next-navigation/src/index.ts",
-          "tsConfig": "packages/next-navigation/tsconfig.lib.json",
-          "skipTypeCheck": true,
-          "stripLeadingPaths": true
-        }
-      }
-    }
+  "peerDependencies": {
+    "next": ">=13.0.0",
+    "react": ">=18.0.0"
   },
-  "dependencies": {
-    "@swc/helpers": "~0.5.11"
+  "devDependencies": {
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.0",
+    "@types/react": "^18.0.0",
+    "jsdom": "^25.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
   }
 }

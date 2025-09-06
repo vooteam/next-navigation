@@ -1,1 +1,1 @@
-export * from './lib/next-navigation.js';
+export * from './lib/next-navigation';

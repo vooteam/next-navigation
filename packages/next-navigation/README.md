@@ -1,8 +1,8 @@
 # @vooteam/next-navigation
 
-A Next.js navigation and authentication library for Vooteam projects.
+A Next.js navigation hook library for async router operations.
 
-This library was generated with [Nx](https://nx.dev).
+This library provides a simple React hook that wraps Next.js router functionality with async/await support for push, replace, and back operations.
 
 ## Installation
 
@@ -17,34 +17,92 @@ yarn add @vooteam/next-navigation
 ## Usage
 
 ```typescript
-import { AuthSession, createAuthConfig } from '@vooteam/next-navigation';
+'use client';
 
-// Create auth configuration
-const config = createAuthConfig({
-  baseUrl: process.env.NEXTAUTH_URL,
-  secret: process.env.NEXTAUTH_SECRET,
-});
+import { useNavigation } from '@vooteam/next-navigation';
 
-// Create auth session
-const authSession = new AuthSession(config);
+function MyComponent() {
+  const navigation = useNavigation();
 
-// Sign in user
-const user = await authSession.signIn({
-  email: 'user@example.com',
-  password: 'password',
-});
+  const handleNavigation = async () => {
+    // Navigate to a new route
+    await navigation.push('/about');
+    console.log('Navigation completed');
 
-// Get current session
-const currentUser = await authSession.getSession();
+    // Navigate with options
+    await navigation.push('/products', { scroll: false });
 
-// Sign out
-await authSession.signOut();
+    // Replace current route
+    await navigation.replace('/login');
+
+    // Go back
+    await navigation.back();
+  };
+
+  return (
+    <div>
+      <button onClick={handleNavigation} disabled={navigation.isPending}>
+        Navigate
+      </button>
+
+      {navigation.isPending && <p>Navigation in progress...</p>}
+    </div>
+  );
+}
+```
+
+## API
+
+### `useNavigation()`
+
+Returns an object with async navigation methods:
+
+- `push(href: string, options?: NavigationOptions): Promise<void>` - Navigate to a new route
+- `replace(href: string, options?: NavigationOptions): Promise<void>` - Replace current route
+- `back(): Promise<void>` - Navigate back in history
+- `isPending: boolean` - Indicates if a navigation transition is in progress (from React's `useTransition`)
+
+### `NavigationOptions`
+
+```typescript
+interface NavigationOptions {
+  scroll?: boolean; // Whether to scroll to top after navigation
+}
+```
+
+## Features
+
+- **Async Navigation**: All navigation methods return promises for better control flow
+- **Loading States**: Built-in `isPending` state using React's `useTransition` for optimal UX
+- **TypeScript Support**: Full type definitions included
+- **Next.js Optimized**: Uses the official `useRouter` from `next/navigation`
+- **Lightweight**: No external dependencies beyond React and Next.js peer dependencies
+
+## Requirements
+
+- Next.js 13+ (with app router)
+- React 18+ (required for `useTransition` support)
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Build the package
+npm run build
+
+# Clean build artifacts
+npm run clean
 ```
 
 ## Building
 
-Run `nx build @vooteam/next-navigation` to build the library.
+Run `npm run build` to build the library.
 
 ## Running unit tests
 
-Run `nx test @vooteam/next-navigation` to execute the unit tests via [Vitest](https://vitest.dev/).
+Run `npm test` to execute the unit tests via [Vitest](https://vitest.dev/).
