@@ -37,7 +37,7 @@
     "@swc/helpers": "~0.5.11",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-import": "2.32.0",
     "nx": "21.4.1",
     "prettier": "^2.6.2",
     "tslib": "^2.3.0",
