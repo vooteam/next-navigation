@@ -56,13 +56,15 @@ export class AuthSession {
   }
 
   async getSession(): Promise<User | null> {
-    // Implement session retrieval logic
-    // This would typically check cookies/tokens
+    // Implement session retrieval logic using the config
+    // This would typically check cookies/tokens with the baseUrl from config
+    console.log('Getting session from:', this.config.baseUrl);
     return null;
   }
 
   async refreshToken(): Promise<string | null> {
-    // Implement token refresh logic
+    // Implement token refresh logic using the config
+    console.log('Refreshing token for:', this.config.baseUrl);
     return null;
   }
 }

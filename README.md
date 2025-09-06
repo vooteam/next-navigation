@@ -70,23 +70,23 @@ pnpm run test
 
 ### Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `pnpm run dev` | Start the Next.js test app for development |
-| `pnpm run dev:lib` | Build the library in watch mode for development |
-| `pnpm run build` | Build the @vooteam/next-navigation package |
-| `pnpm run build:app` | Build the Next.js test app |
-| `pnpm run test` | Run tests for the package |
-| `pnpm run test:watch` | Run tests in watch mode for development |
-| `pnpm run lint` | Run ESLint on the package |
-| `pnpm run build:all` | Build all projects in the workspace |
-| `pnpm run test:all` | Run tests for all projects |
-| `pnpm run lint:all` | Run ESLint on all projects |
-| `pnpm run changeset` | Add a new changeset for version management |
-| `pnpm run changeset:version` | Apply changesets and update package versions |
-| `pnpm run changeset:publish` | Publish packages to NPM |
-| `pnpm run changeset:status` | Check the status of changesets |
-| `pnpm run release` | Build, test, and publish packages |
+| Script                       | Description                                     |
+| ---------------------------- | ----------------------------------------------- |
+| `pnpm run dev`               | Start the Next.js test app for development      |
+| `pnpm run dev:lib`           | Build the library in watch mode for development |
+| `pnpm run build`             | Build the @vooteam/next-navigation package      |
+| `pnpm run build:app`         | Build the Next.js test app                      |
+| `pnpm run test`              | Run tests for the package                       |
+| `pnpm run test:watch`        | Run tests in watch mode for development         |
+| `pnpm run lint`              | Run ESLint on the package                       |
+| `pnpm run build:all`         | Build all projects in the workspace             |
+| `pnpm run test:all`          | Run tests for all projects                      |
+| `pnpm run lint:all`          | Run ESLint on all projects                      |
+| `pnpm run changeset`         | Add a new changeset for version management      |
+| `pnpm run changeset:version` | Apply changesets and update package versions    |
+| `pnpm run changeset:publish` | Publish packages to NPM                         |
+| `pnpm run changeset:status`  | Check the status of changesets                  |
+| `pnpm run release`           | Build, test, and publish packages               |
 
 ### Development Workflow
 
@@ -94,8 +94,8 @@ pnpm run test
 2. **Make changes** to the library in `packages/next-navigation/`
 3. **Add a changeset** with `pnpm run changeset` (describe your changes)
 4. **Run tests** with `pnpm run test` or `pnpm run test:watch`
-4. **Build the package** with `pnpm run build`
-5. **Test changes** in the running Next.js app at `http://localhost:3000`
+5. **Build the package** with `pnpm run build`
+6. **Test changes** in the running Next.js app at `http://localhost:3000`
 
 ## 🚀 CI/CD & Publishing
 
@@ -104,11 +104,13 @@ pnpm run test
 This project uses GitHub Actions and Changesets for continuous integration and deployment:
 
 - **CI Pipeline** (`.github/workflows/ci.yml`): Runs on every push and PR
+
   - Tests on Node.js 18.x and 20.x
   - Runs linting, testing, and building
   - Uploads test coverage
 
 - **Changeset Release** (`.github/workflows/changeset-release.yml`): Automated releases
+
   - Triggered on pushes to main branch
   - Uses changesets for version management
   - Automatically creates release PRs
@@ -129,6 +131,7 @@ pnpm run changeset
 ```
 
 This will prompt you to:
+
 - Select which packages changed
 - Choose the type of change (patch, minor, major)
 - Write a summary of the changes
@@ -144,6 +147,7 @@ git push origin your-branch
 #### Step 3: Merge to Main
 
 When your PR is merged to main, the changeset release workflow will:
+
 - Create a "Version Packages" PR with updated versions and changelog
 - When you merge this PR, it automatically publishes to NPM
 

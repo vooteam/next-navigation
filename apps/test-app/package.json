@@ -2,6 +2,11 @@
   "name": "@next-navigation/test-app",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "@vooteam/next-navigation": "workspace:*",
     "next": "~15.2.4",

@@ -101,9 +101,11 @@ describe('AuthSession', () => {
    ```
 
 2. **Add a changeset** (if your changes should trigger a release)
+
    ```bash
    pnpm run changeset
    ```
+
    Follow the prompts to describe your changes and select the appropriate version bump type.
 
 3. **Run all checks locally**
@@ -127,7 +129,7 @@ describe('AuthSession', () => {
    git push origin feature/your-feature-name
    ```
 
-5. **Create a Pull Request**
+6. **Create a Pull Request**
    - Use a descriptive title
    - Fill out the PR template
    - Link any related issues
