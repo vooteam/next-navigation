@@ -152,7 +152,7 @@ export function useNavigation<T extends Routes = Routes>(
         startTransition(() => {
           const { params, options } = parseNavigationArgs(route, args);
           const url = resolveRoute(config?.routes, route, params);
-          
+
           const filteredOptions = Object.fromEntries(
             Object.entries(options).filter(([, value]) => value !== undefined)
           );
@@ -160,7 +160,7 @@ export function useNavigation<T extends Routes = Routes>(
             Object.keys(filteredOptions).length > 0
               ? filteredOptions
               : undefined;
-              
+
           navigateFn(url, routerOptions);
 
           setTimeout(() => {
@@ -172,7 +172,13 @@ export function useNavigation<T extends Routes = Routes>(
         });
       });
     },
-    [parseNavigationArgs, config?.routes, enableProgress, progress, startTransition]
+    [
+      parseNavigationArgs,
+      config?.routes,
+      enableProgress,
+      progress,
+      startTransition,
+    ]
   );
 
   const push = useCallback(
