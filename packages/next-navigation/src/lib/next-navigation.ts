@@ -29,7 +29,7 @@ export type RouteParams<T> = T extends RouteWithParams<infer P> ? P : undefined;
 export type NavigationParams<T extends Routes, K extends keyof T> = RouteParams<
   T[K]
 > extends undefined
-  ? Record<string, never>
+  ? Record<string, unknown>
   : RouteParams<T[K]>;
 
 // Navigation options interface

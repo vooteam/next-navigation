@@ -12,7 +12,7 @@ export interface NextLinkProps<T extends Routes, K extends keyof T>
 
 // Typed Link component
 export function NextLink<T extends Routes, K extends keyof T>(
-  props: NextLinkProps<T, K> & NavigationParams<T, K>
+  props: NextLinkProps<T, K> & Partial<NavigationParams<T, K>>
 ) {
   const { route, routes, ...rest } = props;
 

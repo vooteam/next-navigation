@@ -1,16 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { NextLink, routes } from '../../navigation';
+import { resolveRoute } from '@vooteam/next-navigation';
 
 const Header = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { href: '/', label: 'Home', icon: '🏠' },
-    { href: '/about', label: 'About', icon: 'ℹ️' },
-    { href: '/products', label: 'Products', icon: '📦' },
-    { href: '/login', label: 'Login', icon: '🔐' },
+    { route: 'home' as const, label: 'Home', icon: '🏠' },
+    { route: 'about' as const, label: 'About', icon: 'ℹ️' },
+    { route: 'products' as const, label: 'Products', icon: '📦' },
+    { route: 'login' as const, label: 'Login', icon: '🔐' },
   ];
 
   return (
@@ -40,8 +41,8 @@ const Header = () => {
           }}
         >
           {/* Logo/Brand */}
-          <Link
-            href="/"
+          <NextLink
+            route="home"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -85,7 +86,7 @@ const Header = () => {
                 Demo App
               </div>
             </div>
-          </Link>
+          </NextLink>
 
           {/* Navigation */}
           <nav>
@@ -96,11 +97,12 @@ const Header = () => {
               }}
             >
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                const itemPath = resolveRoute(routes, item.route);
+                const isActive = pathname === itemPath;
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
+                  <NextLink
+                    key={item.route}
+                    route={item.route}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -115,13 +117,13 @@ const Header = () => {
                       color: isActive ? 'white' : '#d1d5db',
                       border: isActive ? 'none' : '1px solid transparent',
                     }}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                       if (!isActive) {
                         e.currentTarget.style.backgroundColor = '#374151';
                         e.currentTarget.style.color = 'white';
                       }
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                       if (!isActive) {
                         e.currentTarget.style.backgroundColor = 'transparent';
                         e.currentTarget.style.color = '#d1d5db';
@@ -130,7 +132,7 @@ const Header = () => {
                   >
                     <span>{item.icon}</span>
                     <span>{item.label}</span>
-                  </Link>
+                  </NextLink>
                 );
               })}
             </div>

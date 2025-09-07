@@ -15,10 +15,10 @@ export function createNextNavigation<T extends Routes>(
 ) {
   // Create a typed NextLink component bound to the routes
   const TypedNextLink = <K extends keyof T>(
-    props: Omit<NextLinkProps<T, K>, 'routes'> & NavigationParams<T, K>
+    props: Omit<NextLinkProps<T, K>, 'routes'> & Partial<NavigationParams<T, K>>
   ) => {
     return NextLink({ ...props, routes: config.routes } as NextLinkProps<T, K> &
-      NavigationParams<T, K>);
+      Partial<NavigationParams<T, K>>);
   };
 
   return {

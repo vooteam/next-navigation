@@ -2,6 +2,8 @@
 
 import NavigationDemo from './navigation-demo';
 import ProgressDemo from './components/ProgressDemo';
+import NavigationHookDemo from './components/NavigationDemo';
+import LinkDemo from './components/LinkDemo';
 import styles from './page.module.css';
 import { usePageLogger } from './hooks/usePageLogger';
 
@@ -100,6 +102,12 @@ export default function Page() {
 
         {/* Navigation Demo Section */}
         <NavigationDemo />
+
+        {/* Navigation Hook Demo Section */}
+        <NavigationHookDemo />
+
+        {/* Link Demo Section */}
+        <LinkDemo />
 
         {/* Features Section */}
         <div
