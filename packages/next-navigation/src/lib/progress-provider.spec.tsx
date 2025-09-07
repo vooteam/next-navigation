@@ -3,10 +3,9 @@ import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
 
-// Import the actual components
 import { ProgressProvider, useProgress } from './progress-provider';
 
-// Create a test component that uses the useProgress hook
+// Test components
 const TestComponent: React.FC = () => {
   const { start, complete, isLoading } = useProgress();
 
@@ -23,7 +22,6 @@ const TestComponent: React.FC = () => {
   );
 };
 
-// Test component without provider
 const TestComponentWithoutProvider: React.FC = () => {
   const { start, complete, isLoading } = useProgress();
 
@@ -40,6 +38,40 @@ const TestComponentWithoutProvider: React.FC = () => {
   );
 };
 
+// Helper functions
+const getTestElements = () => ({
+  loadingState: screen.getByTestId('loading-state'),
+  startBtn: screen.getByTestId('start-btn'),
+  completeBtn: screen.getByTestId('complete-btn'),
+});
+
+const expectLoadingState = (state: 'loading' | 'idle') => {
+  const { loadingState } = getTestElements();
+  expect(loadingState.textContent).toBe(state);
+};
+
+const clickStart = () => {
+  const { startBtn } = getTestElements();
+  act(() => startBtn.click());
+};
+
+const clickComplete = () => {
+  const { completeBtn } = getTestElements();
+  act(() => completeBtn.click());
+};
+
+const expectProgressBar = (width?: string) => {
+  if (width) {
+    const progressBar = document.querySelector(`div[style*="width: ${width}"]`);
+    expect(progressBar).toBeInTheDocument();
+  } else {
+    const progressElements = document.querySelectorAll(
+      'div[style*="position: fixed"]'
+    );
+    expect(progressElements.length).toBeGreaterThan(0);
+  }
+};
+
 describe('useProgress hook', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -53,19 +85,15 @@ describe('useProgress hook', () => {
   it('should return no-op implementation when used without provider', () => {
     render(<TestComponentWithoutProvider />);
 
-    const loadingState = screen.getByTestId('loading-state');
-    const startBtn = screen.getByTestId('start-btn');
-    const completeBtn = screen.getByTestId('complete-btn');
+    expectLoadingState('idle');
 
-    expect(loadingState.textContent).toBe('idle');
-
-    // Test that no-op functions don't throw errors
+    const { startBtn, completeBtn } = getTestElements();
     expect(() => {
       startBtn.click();
       completeBtn.click();
     }).not.toThrow();
 
-    expect(loadingState.textContent).toBe('idle'); // Should remain idle
+    expectLoadingState('idle');
   });
 
   it('should work correctly with ProgressProvider', () => {
@@ -75,26 +103,13 @@ describe('useProgress hook', () => {
       </ProgressProvider>
     );
 
-    const loadingState = screen.getByTestId('loading-state');
-    const startBtn = screen.getByTestId('start-btn');
-    const completeBtn = screen.getByTestId('complete-btn');
+    expectLoadingState('idle');
 
-    // Initial state should be idle
-    expect(loadingState.textContent).toBe('idle');
+    clickStart();
+    expectLoadingState('loading');
 
-    // Start loading
-    act(() => {
-      startBtn.click();
-    });
-
-    expect(loadingState.textContent).toBe('loading');
-
-    // Complete loading
-    act(() => {
-      completeBtn.click();
-    });
-
-    expect(loadingState.textContent).toBe('idle');
+    clickComplete();
+    expectLoadingState('idle');
   });
 
   it('should handle multiple start/complete calls correctly', () => {
@@ -104,24 +119,16 @@ describe('useProgress hook', () => {
       </ProgressProvider>
     );
 
-    const loadingState = screen.getByTestId('loading-state');
-    const startBtn = screen.getByTestId('start-btn');
-    const completeBtn = screen.getByTestId('complete-btn');
-
-    // Multiple starts should work
+    const { startBtn } = getTestElements();
     act(() => {
       startBtn.click();
       startBtn.click();
     });
 
-    expect(loadingState.textContent).toBe('loading');
+    expectLoadingState('loading');
 
-    // Complete should reset to idle
-    act(() => {
-      completeBtn.click();
-    });
-
-    expect(loadingState.textContent).toBe('idle');
+    clickComplete();
+    expectLoadingState('idle');
   });
 });
 
@@ -153,64 +160,53 @@ describe('ProgressProvider component', () => {
       </ProgressProvider>
     );
 
-    const startBtn = screen.getByTestId('start-btn');
-
-    act(() => {
-      startBtn.click();
-    });
-
-    // Progress bar should be rendered when loading
-    const progressElements = document.querySelectorAll(
-      'div[style*="position: fixed"]'
-    );
-    expect(progressElements.length).toBeGreaterThan(0);
+    clickStart();
+    expectProgressBar();
   });
 
-  it('should render with custom configuration', () => {
-    const customConfig = {
-      color: '#ff0000',
-      height: 5,
-      showSpinner: false,
-      easing: 'linear',
-      speed: 100,
-      shadow: false,
-    };
+  const configTestCases = [
+    {
+      name: 'should render with custom configuration',
+      config: {
+        color: '#ff0000',
+        height: 5,
+        showSpinner: false,
+        easing: 'linear',
+        speed: 100,
+        shadow: false,
+      },
+      expectedSelector: 'div[style*="background-color: rgb(255, 0, 0)"]',
+    },
+    {
+      name: 'should show spinner when showSpinner is true',
+      config: { showSpinner: true },
+      expectedSelector: 'div[style*="border-radius: 50%"]',
+    },
+    {
+      name: 'should apply custom height configuration',
+      config: { height: 10 },
+      expectedSelector: 'div[style*="height: 10px"]',
+    },
+    {
+      name: 'should apply shadow when shadow is true',
+      config: { shadow: true, color: '#3b82f6' },
+      expectedSelector: 'div[style*="box-shadow"]',
+    },
+  ];
 
-    render(
-      <ProgressProvider config={customConfig}>
-        <TestComponent />
-      </ProgressProvider>
-    );
+  configTestCases.forEach(({ name, config, expectedSelector }) => {
+    it(name, () => {
+      render(
+        <ProgressProvider config={config}>
+          <TestComponent />
+        </ProgressProvider>
+      );
 
-    const startBtn = screen.getByTestId('start-btn');
+      clickStart();
 
-    act(() => {
-      startBtn.click();
+      const element = document.querySelector(expectedSelector);
+      expect(element).toBeInTheDocument();
     });
-
-    // Check if custom color is applied
-    const progressBar = document.querySelector(
-      'div[style*="background-color: rgb(255, 0, 0)"]'
-    );
-    expect(progressBar).toBeInTheDocument();
-  });
-
-  it('should show spinner when showSpinner is true', () => {
-    render(
-      <ProgressProvider config={{ showSpinner: true }}>
-        <TestComponent />
-      </ProgressProvider>
-    );
-
-    const startBtn = screen.getByTestId('start-btn');
-
-    act(() => {
-      startBtn.click();
-    });
-
-    // Check for spinner
-    const spinner = document.querySelector('div[style*="border-radius: 50%"]');
-    expect(spinner).toBeInTheDocument();
   });
 
   it('should not show spinner when showSpinner is false', () => {
@@ -220,53 +216,10 @@ describe('ProgressProvider component', () => {
       </ProgressProvider>
     );
 
-    const startBtn = screen.getByTestId('start-btn');
+    clickStart();
 
-    act(() => {
-      startBtn.click();
-    });
-
-    // Check that spinner is not rendered
     const spinner = document.querySelector('div[style*="border-radius: 50%"]');
     expect(spinner).not.toBeInTheDocument();
-  });
-
-  it('should apply custom height configuration', () => {
-    render(
-      <ProgressProvider config={{ height: 10 }}>
-        <TestComponent />
-      </ProgressProvider>
-    );
-
-    const startBtn = screen.getByTestId('start-btn');
-
-    act(() => {
-      startBtn.click();
-    });
-
-    // Check for custom height
-    const progressContainer = document.querySelector(
-      'div[style*="height: 10px"]'
-    );
-    expect(progressContainer).toBeInTheDocument();
-  });
-
-  it('should apply shadow when shadow is true', () => {
-    render(
-      <ProgressProvider config={{ shadow: true, color: '#3b82f6' }}>
-        <TestComponent />
-      </ProgressProvider>
-    );
-
-    const startBtn = screen.getByTestId('start-btn');
-
-    act(() => {
-      startBtn.click();
-    });
-
-    // Check for box-shadow
-    const progressBar = document.querySelector('div[style*="box-shadow"]');
-    expect(progressBar).toBeInTheDocument();
   });
 
   it('should not apply shadow when shadow is false', () => {
@@ -276,13 +229,8 @@ describe('ProgressProvider component', () => {
       </ProgressProvider>
     );
 
-    const startBtn = screen.getByTestId('start-btn');
+    clickStart();
 
-    act(() => {
-      startBtn.click();
-    });
-
-    // Check that box-shadow is none
     const progressBar = document.querySelector(
       'div[style*="box-shadow: none"]'
     );
@@ -300,6 +248,13 @@ describe('ProgressBar animation behavior', () => {
     vi.clearAllMocks();
   });
 
+  const animationSteps = [
+    { time: 0, width: '0%' },
+    { time: 50, width: '30%' },
+    { time: 200, width: '60%' },
+    { time: 400, width: '80%' },
+  ];
+
   it('should animate progress when loading starts', () => {
     render(
       <ProgressProvider>
@@ -307,39 +262,20 @@ describe('ProgressBar animation behavior', () => {
       </ProgressProvider>
     );
 
-    const startBtn = screen.getByTestId('start-btn');
+    clickStart();
 
-    act(() => {
-      startBtn.click();
+    animationSteps.forEach(({ time, width }) => {
+      if (time > 0) {
+        act(() =>
+          vi.advanceTimersByTime(
+            time -
+              (animationSteps[animationSteps.indexOf({ time, width }) - 1]
+                ?.time || 0)
+          )
+        );
+      }
+      expectProgressBar(width);
     });
-
-    // Initially progress should be 0%
-    let progressBar = document.querySelector('div[style*="width: 0%"]');
-    expect(progressBar).toBeInTheDocument();
-
-    // After 50ms should be 30%
-    act(() => {
-      vi.advanceTimersByTime(50);
-    });
-
-    progressBar = document.querySelector('div[style*="width: 30%"]');
-    expect(progressBar).toBeInTheDocument();
-
-    // After 200ms should be 60%
-    act(() => {
-      vi.advanceTimersByTime(150);
-    });
-
-    progressBar = document.querySelector('div[style*="width: 60%"]');
-    expect(progressBar).toBeInTheDocument();
-
-    // After 400ms should be 80%
-    act(() => {
-      vi.advanceTimersByTime(200);
-    });
-
-    progressBar = document.querySelector('div[style*="width: 80%"]');
-    expect(progressBar).toBeInTheDocument();
   });
 
   it('should complete progress animation when complete is called', () => {
@@ -349,35 +285,19 @@ describe('ProgressBar animation behavior', () => {
       </ProgressProvider>
     );
 
-    const startBtn = screen.getByTestId('start-btn');
-    const completeBtn = screen.getByTestId('complete-btn');
+    clickStart();
 
-    act(() => {
-      startBtn.click();
-    });
+    act(() => vi.advanceTimersByTime(100));
 
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
+    clickComplete();
 
-    act(() => {
-      completeBtn.click();
-    });
+    expectProgressBar('100%');
 
-    // Should jump to 100%
-    const progressBar = document.querySelector('div[style*="width: 100%"]');
-    expect(progressBar).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(200));
 
-    // After 200ms the progress should be reset (either hidden or width 0)
-    act(() => {
-      vi.advanceTimersByTime(200);
-    });
-
-    // Check that progress is either reset to 0% or the container is hidden
     const resetProgress = document.querySelector('div[style*="width: 0%"]');
     const hiddenProgress = document.querySelector('div[style*="opacity: 0"]');
 
-    // At least one of these conditions should be true
     expect(
       resetProgress ||
         hiddenProgress ||
@@ -392,10 +312,8 @@ describe('ProgressBar animation behavior', () => {
       </ProgressProvider>
     );
 
-    const startBtn = screen.getByTestId('start-btn');
-    const completeBtn = screen.getByTestId('complete-btn');
+    const { startBtn, completeBtn } = getTestElements();
 
-    // Rapid cycles
     act(() => {
       startBtn.click();
       completeBtn.click();
@@ -403,9 +321,8 @@ describe('ProgressBar animation behavior', () => {
       completeBtn.click();
     });
 
-    // Should handle without errors
     expect(() => {
-      vi.advanceTimersByTime(500);
+      act(() => vi.advanceTimersByTime(500));
     }).not.toThrow();
   });
 
@@ -416,149 +333,89 @@ describe('ProgressBar animation behavior', () => {
       </ProgressProvider>
     );
 
-    const startBtn = screen.getByTestId('start-btn');
-    const completeBtn = screen.getByTestId('complete-btn');
+    clickStart();
 
-    // Start loading
-    act(() => {
-      startBtn.click();
-    });
+    act(() => vi.advanceTimersByTime(50));
 
-    // Let it progress a bit
-    act(() => {
-      vi.advanceTimersByTime(50);
-    });
+    clickComplete();
 
-    // Complete loading - this sets isLoading to false and starts the completion timer
-    act(() => {
-      completeBtn.click();
-    });
-
-    // At this point isLoading = false, progress should be 100%
     let progressContainer = document.querySelector(
       'div[style*="position: fixed"]'
     );
     expect(progressContainer).toBeInTheDocument();
 
-    // Progress should be 100% with opacity 1
-    const progressBar = document.querySelector('div[style*="width: 100%"]');
-    expect(progressBar).toBeInTheDocument();
+    expectProgressBar('100%');
 
-    // Now advance time by exactly 199ms (just before the 200ms timeout that resets progress to 0)
-    act(() => {
-      vi.advanceTimersByTime(199);
-    });
+    act(() => vi.advanceTimersByTime(199));
 
-    // Progress should still be 100%
     progressContainer = document.querySelector('div[style*="position: fixed"]');
     expect(progressContainer).toBeInTheDocument();
 
-    // Now advance by 1ms more to trigger the progress reset to 0
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
+    act(() => vi.advanceTimersByTime(1));
 
-    // Now isLoading = false AND progress = 0, so component should return null
     progressContainer = document.querySelector('div[style*="position: fixed"]');
     expect(progressContainer).toBeNull();
   });
 });
 
 describe('ProgressProvider configuration validation', () => {
-  it('should merge custom config with defaults', () => {
-    const customConfig = {
-      color: '#ff0000',
-      height: 5,
-    };
+  const configValidationTestCases = [
+    {
+      name: 'should merge custom config with defaults',
+      config: { color: '#ff0000', height: 5 },
+      expectations: [
+        {
+          selector: 'div[style*="background-color: rgb(255, 0, 0)"]',
+          should: 'be in document',
+        },
+        { selector: 'div[style*="height: 5px"]', should: 'be in document' },
+        {
+          selector: 'div[style*="border-radius: 50%"]',
+          should: 'be in document',
+        }, // default showSpinner
+      ],
+    },
+    {
+      name: 'should handle empty config object',
+      config: {},
+      expectations: [
+        { selector: 'div[style*="height: 3px"]', should: 'be in document' },
+      ],
+    },
+    {
+      name: 'should handle undefined config',
+      config: undefined,
+      expectations: [
+        { selector: 'div[style*="height: 3px"]', should: 'be in document' },
+      ],
+    },
+    {
+      name: 'should handle partial config with shadow edge cases',
+      config: { shadow: true },
+      expectations: [
+        { selector: 'div[style*="box-shadow"]', should: 'be in document' },
+      ],
+    },
+  ];
 
-    render(
-      <ProgressProvider config={customConfig}>
-        <TestComponent />
-      </ProgressProvider>
-    );
+  configValidationTestCases.forEach(({ name, config, expectations }) => {
+    it(name, () => {
+      render(
+        <ProgressProvider config={config}>
+          <TestComponent />
+        </ProgressProvider>
+      );
 
-    const startBtn = screen.getByTestId('start-btn');
+      clickStart();
 
-    act(() => {
-      startBtn.click();
+      expectations.forEach(({ selector, should }) => {
+        const element = document.querySelector(selector);
+        if (should === 'be in document') {
+          expect(element).toBeInTheDocument();
+        } else {
+          expect(element).not.toBeInTheDocument();
+        }
+      });
     });
-
-    // Custom color should be applied
-    const progressBar = document.querySelector(
-      'div[style*="background-color: rgb(255, 0, 0)"]'
-    );
-    expect(progressBar).toBeInTheDocument();
-
-    // Custom height should be applied
-    const progressContainer = document.querySelector(
-      'div[style*="height: 5px"]'
-    );
-    expect(progressContainer).toBeInTheDocument();
-
-    // Default showSpinner should still work
-    const spinner = document.querySelector('div[style*="border-radius: 50%"]');
-    expect(spinner).toBeInTheDocument();
-  });
-
-  it('should handle empty config object', () => {
-    render(
-      <ProgressProvider config={{}}>
-        <TestComponent />
-      </ProgressProvider>
-    );
-
-    const startBtn = screen.getByTestId('start-btn');
-
-    act(() => {
-      startBtn.click();
-    });
-
-    // Should use defaults
-    const progressContainer = document.querySelector(
-      'div[style*="height: 3px"]'
-    );
-    expect(progressContainer).toBeInTheDocument();
-  });
-
-  it('should handle undefined config', () => {
-    render(
-      <ProgressProvider>
-        <TestComponent />
-      </ProgressProvider>
-    );
-
-    const startBtn = screen.getByTestId('start-btn');
-
-    act(() => {
-      startBtn.click();
-    });
-
-    // Should use defaults
-    const progressContainer = document.querySelector(
-      'div[style*="height: 3px"]'
-    );
-    expect(progressContainer).toBeInTheDocument();
-  });
-
-  it('should handle partial config with shadow edge cases', () => {
-    render(
-      <ProgressProvider config={{ shadow: true }}>
-        <TestComponent />
-      </ProgressProvider>
-    );
-
-    const startBtn = screen.getByTestId('start-btn');
-
-    act(() => {
-      startBtn.click();
-    });
-
-    // Should use default color with shadow
-    const progressBar = document.querySelector('div[style*="box-shadow"]');
-    expect(progressBar).toBeInTheDocument();
-
-    // The shadow should include the default color
-    const shadowStyle = progressBar?.getAttribute('style');
-    expect(shadowStyle).toContain('box-shadow');
   });
 });

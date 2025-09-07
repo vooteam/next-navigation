@@ -2,12 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { render } from '@testing-library/react';
 
-// Mock the resolveRoute function
 vi.mock('./next-navigation', () => ({
   resolveRoute: vi.fn(),
 }));
 
-// Mock Next.js Link component
 vi.mock('next/link', () => ({
   default: React.forwardRef<HTMLAnchorElement, React.ComponentProps<'a'>>(
     (props, ref) => React.createElement('a', { ...props, ref })
@@ -20,51 +18,88 @@ import { resolveRoute } from './next-navigation';
 const mockResolveRoute = resolveRoute as ReturnType<typeof vi.fn>;
 
 describe('NextLink', () => {
+  const createMockRoutes = () => ({
+    home: '/homepage',
+    about: '/about',
+    user: { path: '/user/[id]', params: { id: '' } },
+    product: { path: '/product/[id]', params: { id: '' } },
+    post: {
+      path: '/posts/[slug]/comments/[commentId]',
+      params: { slug: '', commentId: '' },
+    },
+    complex: {
+      path: '/category/[category]/product/[productId]/review/[reviewId]',
+      params: { category: '', productId: '', reviewId: '' },
+    },
+  });
+
+  const expectResolveRouteCall = (
+    routes: any,
+    route: string,
+    params: Record<string, unknown>
+  ) => {
+    expect(mockResolveRoute).toHaveBeenCalledWith(routes, route, params);
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should call resolveRoute with correct parameters for string route', () => {
-    mockResolveRoute.mockReturnValue('/test');
+  const routeTestCases = [
+    {
+      name: 'should call resolveRoute with correct parameters for string route',
+      mockReturn: '/test',
+      routes: { home: '/homepage' },
+      props: { route: 'home', children: 'Test' },
+      expectedParams: {},
+    },
+    {
+      name: 'should call resolveRoute with route parameters',
+      mockReturn: '/user/123',
+      routes: { user: { path: '/user/[id]', params: { id: '' } } },
+      props: { route: 'user', id: '123', children: 'User Profile' },
+      expectedParams: { id: '123' },
+    },
+    {
+      name: 'should handle routes without parameters',
+      mockReturn: '/about',
+      routes: { about: '/about' },
+      props: { route: 'about', children: 'About' },
+      expectedParams: {},
+    },
+    {
+      name: 'should handle direct string routes without routes config',
+      mockReturn: '/direct-path',
+      routes: undefined,
+      props: { route: '/direct-path', children: 'Direct Path' },
+      expectedParams: {},
+    },
+    {
+      name: 'should handle empty route parameters',
+      mockReturn: '/user/[id]',
+      routes: { user: { path: '/user/[id]', params: { id: '' } } },
+      props: { route: 'user', children: 'User' },
+      expectedParams: {},
+    },
+  ];
 
-    const routes = { home: '/homepage' };
-    render(
-      React.createElement(NextLink, { route: 'home', routes, children: 'Test' })
-    );
+  routeTestCases.forEach(
+    ({ name, mockReturn, routes, props, expectedParams }) => {
+      it(name, () => {
+        mockResolveRoute.mockReturnValue(mockReturn);
 
-    expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'home', {});
-  });
+        const linkProps = routes ? { ...props, routes } : props;
+        render(React.createElement(NextLink, linkProps));
 
-  it('should call resolveRoute with route parameters', () => {
-    mockResolveRoute.mockReturnValue('/user/123');
-
-    const routes = {
-      user: { path: '/user/[id]', params: { id: '' } },
-    };
-
-    render(
-      React.createElement(NextLink, {
-        route: 'user',
-        routes,
-        id: '123',
-        children: 'User Profile',
-      })
-    );
-
-    expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'user', {
-      id: '123',
-    });
-  });
+        expectResolveRouteCall(routes, props.route, expectedParams);
+      });
+    }
+  );
 
   it('should separate standard Link props from route parameters', () => {
     mockResolveRoute.mockReturnValue('/posts/my-post/comments/comment-1');
 
-    const routes = {
-      post: {
-        path: '/posts/[slug]/comments/[commentId]',
-        params: { slug: '', commentId: '' },
-      },
-    };
+    const routes = createMockRoutes();
 
     render(
       React.createElement(NextLink, {
@@ -79,112 +114,42 @@ describe('NextLink', () => {
       })
     );
 
-    expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'post', {
+    expectResolveRouteCall(routes, 'post', {
       slug: 'my-post',
       commentId: 'comment-1',
     });
   });
 
-  it('should handle routes without parameters', () => {
-    mockResolveRoute.mockReturnValue('/about');
-
-    const routes = { about: '/about' };
-
-    render(
-      React.createElement(NextLink, {
-        route: 'about',
-        routes,
-        children: 'About',
-      })
-    );
-
-    expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'about', {});
-  });
-
-  it('should handle direct string routes without routes config', () => {
-    mockResolveRoute.mockReturnValue('/direct-path');
-
-    render(
-      React.createElement(NextLink, {
-        route: '/direct-path',
-        children: 'Direct Path',
-      })
-    );
-
-    expect(mockResolveRoute).toHaveBeenCalledWith(
-      undefined,
-      '/direct-path',
-      {}
-    );
-  });
-
-  it('should handle complex route parameters', () => {
-    mockResolveRoute.mockReturnValue(
-      '/category/electronics/product/laptop-123/review/review-456'
-    );
-
-    const routes = {
-      complex: {
-        path: '/category/[category]/product/[productId]/review/[reviewId]',
-        params: { category: '', productId: '', reviewId: '' },
-      },
-    };
-
-    render(
-      React.createElement(NextLink, {
-        route: 'complex',
-        routes,
+  const complexParamTestCases = [
+    {
+      name: 'should handle complex route parameters',
+      mockReturn: '/category/electronics/product/laptop-123/review/review-456',
+      route: 'complex',
+      params: {
         category: 'electronics',
         productId: 'laptop-123',
         reviewId: 'review-456',
-        children: 'Complex Route',
-      })
-    );
+      },
+    },
+    {
+      name: 'should handle numeric route parameters',
+      mockReturn: '/product/12345',
+      route: 'product',
+      params: { id: '12345' },
+    },
+  ];
 
-    expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'complex', {
-      category: 'electronics',
-      productId: 'laptop-123',
-      reviewId: 'review-456',
+  complexParamTestCases.forEach(({ name, mockReturn, route, params }) => {
+    it(name, () => {
+      mockResolveRoute.mockReturnValue(mockReturn);
+
+      const routes = createMockRoutes();
+      const linkProps = { route, routes, ...params, children: 'Test Link' };
+
+      render(React.createElement(NextLink, linkProps));
+
+      expectResolveRouteCall(routes, route, params);
     });
-  });
-
-  it('should handle numeric route parameters', () => {
-    mockResolveRoute.mockReturnValue('/product/12345');
-
-    const routes = {
-      product: { path: '/product/[id]', params: { id: '' } },
-    };
-
-    render(
-      React.createElement(NextLink, {
-        route: 'product',
-        routes,
-        id: '12345',
-        children: 'Product',
-      })
-    );
-
-    expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'product', {
-      id: '12345',
-    });
-  });
-
-  it('should handle empty route parameters', () => {
-    mockResolveRoute.mockReturnValue('/user/[id]');
-
-    const routes = {
-      user: { path: '/user/[id]', params: { id: '' } },
-    };
-
-    render(
-      React.createElement(NextLink, {
-        route: 'user',
-        routes,
-        children: 'User',
-      })
-    );
-
-    expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'user', {});
   });
 
   it('should call resolveRoute even with only required props', () => {
@@ -197,6 +162,6 @@ describe('NextLink', () => {
       })
     );
 
-    expect(mockResolveRoute).toHaveBeenCalledWith(undefined, '/home', {});
+    expectResolveRouteCall(undefined, '/home', {});
   });
 });

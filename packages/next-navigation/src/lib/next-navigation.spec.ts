@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock React and Next.js modules before importing the hook
 vi.mock('react', () => ({
   useCallback: vi.fn((fn) => fn),
   useTransition: vi.fn(() => [false, vi.fn()]),
@@ -29,7 +28,6 @@ vi.mock('./progress-provider', () => ({
   })),
 }));
 
-// Import after mocking
 import { useNavigation, resolveRoute, type Routes } from './next-navigation';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
@@ -39,74 +37,113 @@ const mockUseRouter = useRouter as ReturnType<typeof vi.fn>;
 const mockUseTransition = useTransition as ReturnType<typeof vi.fn>;
 const mockUseProgress = useProgress as ReturnType<typeof vi.fn>;
 
+// Test helper functions
+const createMockRoutes = () => ({
+  simple: '/simple-route',
+  userProfile: { path: '/user/[id]/profile', params: { id: '' } },
+  userPost: {
+    path: '/user/[userId]/post/[postId]',
+    params: { userId: '', postId: '' },
+  },
+  product: '/product/[id]',
+  post: { path: '/post/[slug]', params: { slug: '' } },
+});
+
+const expectProgressCalls = (
+  mockStart: ReturnType<typeof vi.fn>,
+  mockComplete: ReturnType<typeof vi.fn>
+) => {
+  expect(mockStart).toHaveBeenCalled();
+  expect(mockComplete).toHaveBeenCalled();
+};
+
+const expectNoProgressCalls = (
+  mockStart: ReturnType<typeof vi.fn>,
+  mockComplete: ReturnType<typeof vi.fn>
+) => {
+  expect(mockStart).not.toHaveBeenCalled();
+  expect(mockComplete).not.toHaveBeenCalled();
+};
+
 describe('resolveRoute', () => {
-  it('should return the href as string when routes is undefined', () => {
-    const result = resolveRoute(undefined, '/test', {});
-    expect(result).toBe('/test');
-  });
+  const testCases = [
+    {
+      name: 'should return the href as string when routes is undefined',
+      routes: undefined,
+      href: '/test',
+      params: {},
+      expected: '/test',
+    },
+    {
+      name: 'should return the href as string when href is not a string',
+      routes: { home: '/home' },
+      href: 123 as unknown as string,
+      params: {},
+      expected: '123',
+    },
+    {
+      name: 'should return the href as string when href is not in routes',
+      routes: { home: '/home' },
+      href: '/unknown',
+      params: {},
+      expected: '/unknown',
+    },
+    {
+      name: 'should return string route directly',
+      routes: { home: '/home', about: '/about' },
+      href: 'home',
+      params: {},
+      expected: '/home',
+    },
+    {
+      name: 'should resolve route with params object and no parameters',
+      routes: { user: { path: '/user/profile', params: undefined } } as Routes,
+      href: 'user',
+      params: {},
+      expected: '/user/profile',
+    },
+    {
+      name: 'should resolve route with params and replace dynamic segments',
+      routes: {
+        user: { path: '/user/[id]/profile', params: { id: '' } },
+      } as Routes,
+      href: 'user',
+      params: { id: '123' },
+      expected: '/user/123/profile',
+    },
+    {
+      name: 'should replace multiple dynamic segments',
+      routes: {
+        post: {
+          path: '/user/[userId]/post/[postId]',
+          params: { userId: '', postId: '' },
+        },
+      } as Routes,
+      href: 'post',
+      params: { userId: '123', postId: '456' },
+      expected: '/user/123/post/456',
+    },
+    {
+      name: 'should handle empty params object',
+      routes: { user: { path: '/user/[id]', params: { id: '' } } } as Routes,
+      href: 'user',
+      params: {},
+      expected: '/user/[id]',
+    },
+    {
+      name: 'should convert non-string param values to strings',
+      routes: { user: { path: '/user/[id]', params: { id: '' } } } as Routes,
+      href: 'user',
+      params: { id: 123 },
+      expected: '/user/123',
+    },
+  ];
 
-  it('should return the href as string when href is not a string', () => {
-    const routes = { home: '/home' };
-    const result = resolveRoute(routes, 123 as unknown as string, {});
-    expect(result).toBe('123');
-  });
-
-  it('should return the href as string when href is not in routes', () => {
-    const routes = { home: '/home' };
-    const result = resolveRoute(routes, '/unknown', {});
-    expect(result).toBe('/unknown');
-  });
-
-  it('should return string route directly', () => {
-    const routes = { home: '/home', about: '/about' };
-    const result = resolveRoute(routes, 'home', {});
-    expect(result).toBe('/home');
-  });
-
-  it('should resolve route with params object and no parameters', () => {
-    const routes: Routes = {
-      user: { path: '/user/profile', params: undefined },
-    };
-    const result = resolveRoute(routes, 'user', {});
-    expect(result).toBe('/user/profile');
-  });
-
-  it('should resolve route with params and replace dynamic segments', () => {
-    const routes: Routes = {
-      user: { path: '/user/[id]/profile', params: { id: '' } },
-    };
-    const result = resolveRoute(routes, 'user', { id: '123' });
-    expect(result).toBe('/user/123/profile');
-  });
-
-  it('should replace multiple dynamic segments', () => {
-    const routes: Routes = {
-      post: {
-        path: '/user/[userId]/post/[postId]',
-        params: { userId: '', postId: '' },
-      },
-    };
-    const result = resolveRoute(routes, 'post', {
-      userId: '123',
-      postId: '456',
+  testCases.forEach(({ name, routes, href, params, expected }) => {
+    it(name, () => {
+      const result = resolveRoute(routes, href, params);
+      expect(result).toBe(expected);
     });
-    expect(result).toBe('/user/123/post/456');
-  });
-
-  it('should handle empty params object', () => {
-    const routes: Routes = {
-      user: { path: '/user/[id]', params: { id: '' } },
-    };
-    const result = resolveRoute(routes, 'user', {});
-    expect(result).toBe('/user/[id]');
-  });
-
-  it('should convert non-string param values to strings', () => {
-    const routes: Routes = {
-      user: { path: '/user/[id]', params: { id: '' } },
-    };
-    const result = resolveRoute(routes, 'user', { id: 123 });
-    expect(result).toBe('/user/123');
   });
 });
 
@@ -118,9 +155,7 @@ describe('useNavigation', () => {
   let mockProgressStart: ReturnType<typeof vi.fn>;
   let mockProgressComplete: ReturnType<typeof vi.fn>;
 
-  beforeEach(() => {
-    vi.useFakeTimers();
-
+  const setupMocks = () => {
     mockPush = vi.fn();
     mockReplace = vi.fn();
     mockBack = vi.fn();
@@ -133,14 +168,22 @@ describe('useNavigation', () => {
       replace: mockReplace,
       back: mockBack,
     });
-
     mockUseTransition.mockReturnValue([false, mockStartTransition]);
-
     mockUseProgress.mockReturnValue({
       start: mockProgressStart,
       complete: mockProgressComplete,
       isLoading: false,
     });
+  };
+
+  const advanceTimersAndWait = async (ms = 100) => {
+    vi.advanceTimersByTime(ms);
+    await Promise.resolve();
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    setupMocks();
   });
 
   afterEach(() => {
@@ -151,23 +194,21 @@ describe('useNavigation', () => {
   describe('basic functionality', () => {
     it('should provide async push function', async () => {
       const navigation = useNavigation();
-
       const pushPromise = navigation.push('/test-path');
-      vi.advanceTimersByTime(100);
+
+      await advanceTimersAndWait();
       await pushPromise;
 
       expect(mockStartTransition).toHaveBeenCalled();
       expect(mockPush).toHaveBeenCalledWith('/test-path', undefined);
-      expect(mockProgressStart).toHaveBeenCalled();
-      expect(mockProgressComplete).toHaveBeenCalled();
+      expectProgressCalls(mockProgressStart, mockProgressComplete);
     });
 
     it('should provide async push function with scroll option', async () => {
       const navigation = useNavigation();
-      const options = { scroll: false };
+      const pushPromise = navigation.push('/test-path', { scroll: false });
 
-      const pushPromise = navigation.push('/test-path', options);
-      vi.advanceTimersByTime(100);
+      await advanceTimersAndWait();
       await pushPromise;
 
       expect(mockStartTransition).toHaveBeenCalled();
@@ -176,10 +217,9 @@ describe('useNavigation', () => {
 
     it('should provide async push function with scroll undefined', async () => {
       const navigation = useNavigation();
-      const options = { scroll: undefined };
+      const pushPromise = navigation.push('/test-path', { scroll: undefined });
 
-      const pushPromise = navigation.push('/test-path', options);
-      vi.advanceTimersByTime(100);
+      await advanceTimersAndWait();
       await pushPromise;
 
       expect(mockPush).toHaveBeenCalledWith('/test-path', undefined);
@@ -187,23 +227,21 @@ describe('useNavigation', () => {
 
     it('should provide async replace function', async () => {
       const navigation = useNavigation();
-
       const replacePromise = navigation.replace('/test-path');
-      vi.advanceTimersByTime(100);
+
+      await advanceTimersAndWait();
       await replacePromise;
 
       expect(mockStartTransition).toHaveBeenCalled();
       expect(mockReplace).toHaveBeenCalledWith('/test-path', undefined);
-      expect(mockProgressStart).toHaveBeenCalled();
-      expect(mockProgressComplete).toHaveBeenCalled();
+      expectProgressCalls(mockProgressStart, mockProgressComplete);
     });
 
     it('should provide async replace function with scroll option', async () => {
       const navigation = useNavigation();
-      const options = { scroll: true };
+      const replacePromise = navigation.replace('/test-path', { scroll: true });
 
-      const replacePromise = navigation.replace('/test-path', options);
-      vi.advanceTimersByTime(100);
+      await advanceTimersAndWait();
       await replacePromise;
 
       expect(mockReplace).toHaveBeenCalledWith('/test-path', { scroll: true });
@@ -211,15 +249,14 @@ describe('useNavigation', () => {
 
     it('should provide async back function', async () => {
       const navigation = useNavigation();
-
       const backPromise = navigation.back();
-      vi.advanceTimersByTime(100);
+
+      await advanceTimersAndWait();
       await backPromise;
 
       expect(mockStartTransition).toHaveBeenCalled();
       expect(mockBack).toHaveBeenCalledWith();
-      expect(mockProgressStart).toHaveBeenCalled();
-      expect(mockProgressComplete).toHaveBeenCalled();
+      expectProgressCalls(mockProgressStart, mockProgressComplete);
     });
 
     it('should return navigation methods and isPending state', () => {
@@ -244,48 +281,45 @@ describe('useNavigation', () => {
   });
 
   describe('progress configuration', () => {
-    it('should not call progress methods when enableProgress is false', async () => {
-      const navigation = useNavigation({ enableProgress: false });
-
+    const testProgressConfig = async (
+      enableProgress: boolean,
+      shouldCallProgress: boolean
+    ) => {
+      const navigation = useNavigation({ enableProgress });
       const pushPromise = navigation.push('/test-path');
-      vi.advanceTimersByTime(100);
+
+      await advanceTimersAndWait();
       await pushPromise;
 
-      expect(mockProgressStart).not.toHaveBeenCalled();
-      expect(mockProgressComplete).not.toHaveBeenCalled();
+      if (shouldCallProgress) {
+        expectProgressCalls(mockProgressStart, mockProgressComplete);
+      } else {
+        expectNoProgressCalls(mockProgressStart, mockProgressComplete);
+      }
+    };
+
+    it('should not call progress methods when enableProgress is false', async () => {
+      await testProgressConfig(false, false);
     });
 
     it('should call progress methods when enableProgress is true', async () => {
-      const navigation = useNavigation({ enableProgress: true });
-
-      const pushPromise = navigation.push('/test-path');
-      vi.advanceTimersByTime(100);
-      await pushPromise;
-
-      expect(mockProgressStart).toHaveBeenCalled();
-      expect(mockProgressComplete).toHaveBeenCalled();
+      await testProgressConfig(true, true);
     });
 
     it('should call progress methods by default', async () => {
       const navigation = useNavigation({});
-
       const pushPromise = navigation.push('/test-path');
-      vi.advanceTimersByTime(100);
+
+      await advanceTimersAndWait();
       await pushPromise;
 
-      expect(mockProgressStart).toHaveBeenCalled();
-      expect(mockProgressComplete).toHaveBeenCalled();
+      expectProgressCalls(mockProgressStart, mockProgressComplete);
     });
   });
 
   describe('routes configuration', () => {
     it('should resolve routes when provided in config for push', async () => {
-      const routes: Routes = {
-        home: '/homepage',
-        user: { path: '/user/[id]', params: { id: '' } },
-      };
-
-      const navigation = useNavigation({ routes });
+      const navigation = useNavigation({ routes: { home: '/homepage' } });
 
       const pushPromise = navigation.push('home');
       vi.advanceTimersByTime(100);
@@ -295,45 +329,38 @@ describe('useNavigation', () => {
     });
 
     it('should resolve routes with params for push', async () => {
-      const routes: Routes = {
-        user: { path: '/user/[id]', params: { id: '' } },
-      };
-
+      const routes = createMockRoutes();
       const navigation = useNavigation({ routes });
 
-      // TypeScript has trouble inferring route params correctly in this test context
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pushPromise = (navigation.push as any)('user', { id: '123' });
+      const pushPromise = (navigation.push as any)('userProfile', {
+        id: '123',
+      });
       vi.advanceTimersByTime(100);
       await pushPromise;
 
-      expect(mockPush).toHaveBeenCalledWith('/user/123', undefined);
+      expect(mockPush).toHaveBeenCalledWith('/user/123/profile', undefined);
     });
 
     it('should resolve routes with params and scroll option for push', async () => {
-      const routes: Routes = {
-        user: { path: '/user/[id]', params: { id: '' } },
-      };
-
+      const routes = createMockRoutes();
       const navigation = useNavigation({ routes });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pushPromise = (navigation.push as any)('user', {
+      const pushPromise = (navigation.push as any)('userProfile', {
         id: '123',
         scroll: false,
       });
       vi.advanceTimersByTime(100);
       await pushPromise;
 
-      expect(mockPush).toHaveBeenCalledWith('/user/123', { scroll: false });
+      expect(mockPush).toHaveBeenCalledWith('/user/123/profile', {
+        scroll: false,
+      });
     });
 
     it('should resolve routes when provided in config for replace', async () => {
-      const routes: Routes = {
-        about: '/about-us',
-      };
-
-      const navigation = useNavigation({ routes });
+      const navigation = useNavigation({ routes: { about: '/about-us' } });
 
       const replacePromise = navigation.replace('about');
       vi.advanceTimersByTime(100);
@@ -343,10 +370,7 @@ describe('useNavigation', () => {
     });
 
     it('should resolve routes with params for replace', async () => {
-      const routes: Routes = {
-        post: { path: '/post/[slug]', params: { slug: '' } },
-      };
-
+      const routes = createMockRoutes();
       const navigation = useNavigation({ routes });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -363,11 +387,7 @@ describe('useNavigation', () => {
     });
 
     it('should use string href directly when not in routes', async () => {
-      const routes: Routes = {
-        home: '/homepage',
-      };
-
-      const navigation = useNavigation({ routes });
+      const navigation = useNavigation();
 
       const pushPromise = navigation.push('/custom-path');
       vi.advanceTimersByTime(100);
@@ -378,26 +398,21 @@ describe('useNavigation', () => {
   });
 
   describe('parameter handling', () => {
-    it('should separate route params from navigation options', async () => {
-      const routes: Routes = {
-        user: {
-          path: '/user/[id]/posts/[postId]',
-          params: { id: '', postId: '' },
-        },
-      };
+    const routes = createMockRoutes();
 
+    it('should separate route params from navigation options', async () => {
       const navigation = useNavigation({ routes });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pushPromise = (navigation.push as any)('user', {
-        id: '123',
+      const pushPromise = (navigation.push as any)('userPost', {
+        userId: '123',
         postId: '456',
         scroll: false,
       });
       vi.advanceTimersByTime(100);
       await pushPromise;
 
-      expect(mockPush).toHaveBeenCalledWith('/user/123/posts/456', {
+      expect(mockPush).toHaveBeenCalledWith('/user/123/post/456', {
         scroll: false,
       });
     });
@@ -423,48 +438,34 @@ describe('useNavigation', () => {
     });
 
     it('should handle route with params and separate navigation options for push', async () => {
-      const routes: Routes = {
-        user: {
-          path: '/user/[id]',
-          params: { id: '' },
-        },
-      };
-
       const navigation = useNavigation({ routes });
 
-      // This tests the three-argument runtime case beyond TypeScript interface
-      const pushPromise = navigation.push(
-        'user',
+      // Testing undocumented 3-argument runtime behavior
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pushPromise = (navigation.push as any)(
+        'userProfile',
         { id: '123' },
-        // @ts-expect-error - Testing undocumented 3-argument runtime behavior
         { scroll: false }
       );
-      vi.advanceTimersByTime(100);
+      await advanceTimersAndWait();
       await pushPromise;
 
-      expect(mockPush).toHaveBeenCalledWith('/user/123', {
+      expect(mockPush).toHaveBeenCalledWith('/user/123/profile', {
         scroll: false,
       });
     });
 
     it('should handle route with params and separate navigation options for replace', async () => {
-      const routes: Routes = {
-        post: {
-          path: '/post/[slug]',
-          params: { slug: '' },
-        },
-      };
-
       const navigation = useNavigation({ routes });
 
-      // This tests the three-argument runtime case beyond TypeScript interface  
-      const replacePromise = navigation.replace(
+      // Testing undocumented 3-argument runtime behavior
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const replacePromise = (navigation.replace as any)(
         'post',
         { slug: 'test-post' },
-        // @ts-expect-error - Testing undocumented 3-argument runtime behavior
         { scroll: true }
       );
-      vi.advanceTimersByTime(100);
+      await advanceTimersAndWait();
       await replacePromise;
 
       expect(mockReplace).toHaveBeenCalledWith('/post/test-post', {
@@ -479,9 +480,7 @@ describe('useNavigation', () => {
       vi.advanceTimersByTime(100);
       await pushPromise;
 
-      expect(mockPush).toHaveBeenCalledWith('/simple-route', {
-        scroll: false,
-      });
+      expect(mockPush).toHaveBeenCalledWith('/simple-route', { scroll: false });
     });
 
     it('should handle pure navigation options without route params for replace', async () => {
@@ -499,12 +498,9 @@ describe('useNavigation', () => {
     });
 
     it('should handle route parameters when route config has no params defined for push', async () => {
-      const routes: Routes = {
-        // Route without params property defined
-        product: '/product/[id]',
-      };
-
-      const navigation = useNavigation({ routes });
+      const navigation = useNavigation({
+        routes: { product: '/product/[id]' },
+      });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const pushPromise = (navigation.push as any)('product', {
@@ -514,18 +510,13 @@ describe('useNavigation', () => {
       vi.advanceTimersByTime(100);
       await pushPromise;
 
-      expect(mockPush).toHaveBeenCalledWith('/product/[id]', {
-        scroll: false,
-      });
+      expect(mockPush).toHaveBeenCalledWith('/product/[id]', { scroll: false });
     });
 
     it('should handle route parameters when route config has no params defined for replace', async () => {
-      const routes: Routes = {
-        // Route without params property defined
-        category: '/category/[slug]',
-      };
-
-      const navigation = useNavigation({ routes });
+      const navigation = useNavigation({
+        routes: { category: '/category/[slug]' },
+      });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const replacePromise = (navigation.replace as any)('category', {
@@ -541,43 +532,29 @@ describe('useNavigation', () => {
     });
 
     it('should handle extra parameters not defined in route params for push', async () => {
-      const routes: Routes = {
-        user: {
-          path: '/user/[id]',
-          params: { id: '' }, // Only id is defined
-        },
-      };
-
+      const routes = { user: { path: '/user/[id]', params: { id: '' } } };
       const navigation = useNavigation({ routes });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const pushPromise = (navigation.push as any)('user', {
         id: '123',
-        name: 'john', // Extra param not in route definition
+        name: 'john',
         scroll: false,
       });
       vi.advanceTimersByTime(100);
       await pushPromise;
 
-      expect(mockPush).toHaveBeenCalledWith('/user/123', {
-        scroll: false,
-      });
+      expect(mockPush).toHaveBeenCalledWith('/user/123', { scroll: false });
     });
 
     it('should handle extra parameters not defined in route params for replace', async () => {
-      const routes: Routes = {
-        post: {
-          path: '/post/[slug]',
-          params: { slug: '' }, // Only slug is defined
-        },
-      };
-
+      const routes = { post: { path: '/post/[slug]', params: { slug: '' } } };
       const navigation = useNavigation({ routes });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const replacePromise = (navigation.replace as any)('post', {
         slug: 'my-article',
-        author: 'jane', // Extra param not in route definition
+        author: 'jane',
         scroll: true,
       });
       vi.advanceTimersByTime(100);
@@ -590,57 +567,36 @@ describe('useNavigation', () => {
   });
 
   describe('timing and promises', () => {
-    it('should resolve push promise after timeout', async () => {
-      const navigation = useNavigation();
+    const testPromiseResolution = async (action: () => Promise<void>) => {
       let resolved = false;
-
-      const pushPromise = navigation.push('/test').then(() => {
+      const promise = action().then(() => {
         resolved = true;
       });
 
       expect(resolved).toBe(false);
 
       vi.advanceTimersByTime(99);
-      await Promise.resolve(); // Allow microtasks to run
+      await Promise.resolve();
       expect(resolved).toBe(false);
 
       vi.advanceTimersByTime(1);
-      await pushPromise;
+      await promise;
       expect(resolved).toBe(true);
+    };
+
+    it('should resolve push promise after timeout', async () => {
+      const navigation = useNavigation();
+      await testPromiseResolution(() => navigation.push('/test'));
     });
 
     it('should resolve replace promise after timeout', async () => {
       const navigation = useNavigation();
-      let resolved = false;
-
-      const replacePromise = navigation.replace('/test').then(() => {
-        resolved = true;
-      });
-
-      vi.advanceTimersByTime(50);
-      await Promise.resolve();
-      expect(resolved).toBe(false);
-
-      vi.advanceTimersByTime(50);
-      await replacePromise;
-      expect(resolved).toBe(true);
+      await testPromiseResolution(() => navigation.replace('/test'));
     });
 
     it('should resolve back promise after timeout', async () => {
       const navigation = useNavigation();
-      let resolved = false;
-
-      const backPromise = navigation.back().then(() => {
-        resolved = true;
-      });
-
-      vi.advanceTimersByTime(50);
-      await Promise.resolve();
-      expect(resolved).toBe(false);
-
-      vi.advanceTimersByTime(50);
-      await backPromise;
-      expect(resolved).toBe(true);
+      await testPromiseResolution(() => navigation.back());
     });
   });
 });

@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { render } from '@testing-library/react';
 
-// Mock the dependencies
 vi.mock('./next-navigation', () => ({
   useNavigation: vi.fn(),
 }));
@@ -27,6 +26,21 @@ describe('createNextNavigation', () => {
     isPending: false,
   };
 
+  const createMockRoutes = () => ({
+    home: '/home',
+    about: '/about',
+    user: { path: '/user/[id]', params: { id: '' } },
+    product: { path: '/product/[id]', params: { id: '' } },
+    post: { path: '/post/[slug]', params: { slug: '' } },
+  });
+
+  const expectNextLinkCall = (expectedProps: Record<string, unknown>) => {
+    expect(mockNextLink).toHaveBeenCalledWith(
+      { ...expectedProps, ref: null },
+      undefined
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseNavigation.mockReturnValue(mockNavigationReturn);
@@ -48,14 +62,8 @@ describe('createNextNavigation', () => {
   });
 
   it('should create useNavigation hook with provided config', () => {
-    const routes: Routes = {
-      home: '/home',
-      user: { path: '/user/[id]', params: { id: '' } },
-    };
-    const config = {
-      routes,
-      enableProgress: true,
-    };
+    const routes = createMockRoutes();
+    const config = { routes, enableProgress: true };
 
     const navigation = createNextNavigation(config);
     const hookResult = navigation.useNavigation();
@@ -65,11 +73,7 @@ describe('createNextNavigation', () => {
   });
 
   it('should create NextLink component with bound routes', () => {
-    const routes: Routes = {
-      home: '/home',
-      product: { path: '/product/[id]', params: { id: '' } },
-    };
-
+    const routes = createMockRoutes();
     const navigation = createNextNavigation({ routes });
     const TypedNextLink = navigation.NextLink;
 
@@ -80,22 +84,11 @@ describe('createNextNavigation', () => {
 
     render(React.createElement(TypedNextLink, linkProps));
 
-    expect(mockNextLink).toHaveBeenCalledWith(
-      {
-        ...linkProps,
-        routes,
-        ref: null,
-      },
-      undefined
-    );
+    expectNextLinkCall({ ...linkProps, routes });
   });
 
   it('should create NextLink component with route parameters', () => {
-    const routes: Routes = {
-      user: { path: '/user/[id]', params: { id: '' } },
-      post: { path: '/post/[slug]', params: { slug: '' } },
-    };
-
+    const routes = createMockRoutes();
     const navigation = createNextNavigation({ routes });
     const TypedNextLink = navigation.NextLink;
 
@@ -107,41 +100,31 @@ describe('createNextNavigation', () => {
 
     render(React.createElement(TypedNextLink, linkProps));
 
-    expect(mockNextLink).toHaveBeenCalledWith(
-      {
-        route: 'user',
-        id: '123',
-        children: 'User Profile',
-        routes,
-        ref: null,
-      },
-      undefined
-    );
+    expectNextLinkCall({ ...linkProps, routes });
   });
 
-  it('should handle config with enableProgress disabled', () => {
-    const routes: Routes = {
-      home: '/home',
-    };
-    const config = {
-      routes,
-      enableProgress: false,
-    };
+  const configTestCases = [
+    {
+      name: 'should handle config with enableProgress disabled',
+      config: { routes: { home: '/home' }, enableProgress: false },
+    },
+    {
+      name: 'should handle empty routes configuration',
+      config: { routes: {} as Routes },
+    },
+    {
+      name: 'should preserve all configuration options',
+      config: { routes: createMockRoutes(), enableProgress: true },
+    },
+  ];
 
-    const navigation = createNextNavigation(config);
-    navigation.useNavigation();
+  configTestCases.forEach(({ name, config }) => {
+    it(name, () => {
+      const navigation = createNextNavigation(config);
+      navigation.useNavigation();
 
-    expect(mockUseNavigation).toHaveBeenCalledWith(config);
-  });
-
-  it('should handle empty routes configuration', () => {
-    const routes: Routes = {};
-    const config = { routes };
-
-    const navigation = createNextNavigation(config);
-    navigation.useNavigation();
-
-    expect(mockUseNavigation).toHaveBeenCalledWith(config);
+      expect(mockUseNavigation).toHaveBeenCalledWith(config);
+    });
   });
 
   it('should create multiple independent navigation instances', () => {
@@ -159,31 +142,8 @@ describe('createNextNavigation', () => {
     expect(mockUseNavigation).toHaveBeenNthCalledWith(2, { routes: routes2 });
   });
 
-  it('should preserve all configuration options', () => {
-    const routes: Routes = {
-      home: '/home',
-      user: { path: '/user/[id]', params: { id: '' } },
-    };
-
-    const config = {
-      routes,
-      enableProgress: true,
-    };
-
-    const navigation = createNextNavigation(config);
-    navigation.useNavigation();
-
-    expect(mockUseNavigation).toHaveBeenCalledWith({
-      routes,
-      enableProgress: true,
-    });
-  });
-
   it('should pass through Link props to NextLink component', () => {
-    const routes: Routes = {
-      about: '/about',
-    };
-
+    const routes: Routes = { about: '/about' };
     const navigation = createNextNavigation({ routes });
     const TypedNextLink = navigation.NextLink;
 
@@ -197,13 +157,6 @@ describe('createNextNavigation', () => {
 
     render(React.createElement(TypedNextLink, linkProps));
 
-    expect(mockNextLink).toHaveBeenCalledWith(
-      {
-        ...linkProps,
-        routes,
-        ref: null,
-      },
-      undefined
-    );
+    expectNextLinkCall({ ...linkProps, routes });
   });
 });
