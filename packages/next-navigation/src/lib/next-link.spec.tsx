@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
+import { render } from '@testing-library/react';
 
 // Mock the resolveRoute function
 vi.mock('./next-navigation', () => ({
@@ -7,7 +9,9 @@ vi.mock('./next-navigation', () => ({
 
 // Mock Next.js Link component
 vi.mock('next/link', () => ({
-  default: vi.fn(() => null),
+  default: React.forwardRef<HTMLAnchorElement, React.ComponentProps<'a'>>(
+    (props, ref) => React.createElement('a', { ...props, ref })
+  ),
 }));
 
 import { NextLink } from './next-link';
@@ -24,7 +28,9 @@ describe('NextLink', () => {
     mockResolveRoute.mockReturnValue('/test');
 
     const routes = { home: '/homepage' };
-    NextLink({ route: 'home', routes, children: 'Test' });
+    render(
+      React.createElement(NextLink, { route: 'home', routes, children: 'Test' })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'home', {});
   });
@@ -36,12 +42,14 @@ describe('NextLink', () => {
       user: { path: '/user/[id]', params: { id: '' } },
     };
 
-    NextLink({
-      route: 'user',
-      routes,
-      id: '123',
-      children: 'User Profile',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: 'user',
+        routes,
+        id: '123',
+        children: 'User Profile',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'user', {
       id: '123',
@@ -58,16 +66,18 @@ describe('NextLink', () => {
       },
     };
 
-    NextLink({
-      route: 'post',
-      routes,
-      slug: 'my-post',
-      commentId: 'comment-1',
-      className: 'link-class',
-      scroll: true,
-      prefetch: false,
-      children: 'Post Link',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: 'post',
+        routes,
+        slug: 'my-post',
+        commentId: 'comment-1',
+        className: 'link-class',
+        scroll: true,
+        prefetch: false,
+        children: 'Post Link',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'post', {
       slug: 'my-post',
@@ -80,11 +90,13 @@ describe('NextLink', () => {
 
     const routes = { about: '/about' };
 
-    NextLink({
-      route: 'about',
-      routes,
-      children: 'About',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: 'about',
+        routes,
+        children: 'About',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'about', {});
   });
@@ -92,10 +104,12 @@ describe('NextLink', () => {
   it('should handle direct string routes without routes config', () => {
     mockResolveRoute.mockReturnValue('/direct-path');
 
-    NextLink({
-      route: '/direct-path',
-      children: 'Direct Path',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: '/direct-path',
+        children: 'Direct Path',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(
       undefined,
@@ -116,14 +130,16 @@ describe('NextLink', () => {
       },
     };
 
-    NextLink({
-      route: 'complex',
-      routes,
-      category: 'electronics',
-      productId: 'laptop-123',
-      reviewId: 'review-456',
-      children: 'Complex Route',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: 'complex',
+        routes,
+        category: 'electronics',
+        productId: 'laptop-123',
+        reviewId: 'review-456',
+        children: 'Complex Route',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'complex', {
       category: 'electronics',
@@ -139,12 +155,14 @@ describe('NextLink', () => {
       product: { path: '/product/[id]', params: { id: '' } },
     };
 
-    NextLink({
-      route: 'product',
-      routes,
-      id: '12345',
-      children: 'Product',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: 'product',
+        routes,
+        id: '12345',
+        children: 'Product',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'product', {
       id: '12345',
@@ -158,11 +176,13 @@ describe('NextLink', () => {
       user: { path: '/user/[id]', params: { id: '' } },
     };
 
-    NextLink({
-      route: 'user',
-      routes,
-      children: 'User',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: 'user',
+        routes,
+        children: 'User',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(routes, 'user', {});
   });
@@ -170,10 +190,12 @@ describe('NextLink', () => {
   it('should call resolveRoute even with only required props', () => {
     mockResolveRoute.mockReturnValue('/home');
 
-    NextLink({
-      route: '/home',
-      children: 'Home',
-    });
+    render(
+      React.createElement(NextLink, {
+        route: '/home',
+        children: 'Home',
+      })
+    );
 
     expect(mockResolveRoute).toHaveBeenCalledWith(undefined, '/home', {});
   });

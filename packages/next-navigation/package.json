@@ -1,10 +1,13 @@
 {
   "name": "@vooteam/next-navigation",
   "version": "1.0.0",
-  "description": "A Next.js navigation hook library for async router operations",
-  "author": "Vooteam",
+  "description": "A powerful, type-safe Next.js navigation library with async router operations, built-in progress indicators, and seamless TypeScript integration.",
+  "author": {
+    "name": "VooTeam",
+    "url": "https://github.com/vooteam"
+  },
   "license": "MIT",
-  "homepage": "https://github.com/vooteam/next-navigation",
+  "homepage": "https://github.com/vooteam/next-navigation#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/vooteam/next-navigation.git",
@@ -13,16 +16,27 @@
   "bugs": {
     "url": "https://github.com/vooteam/next-navigation/issues"
   },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/vooteam"
+  },
   "keywords": [
     "nextjs",
+    "next.js",
     "navigation",
     "router",
     "react",
     "hook",
     "async",
+    "typescript",
+    "progress-bar",
+    "loading",
+    "app-router",
+    "react18",
+    "use-transition",
+    "type-safe",
     "vooteam"
   ],
-  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,29 +45,41 @@
     ".": {
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
   "files": [
     "dist",
+    "README.md",
+    "LICENSE",
     "!**/*.tsbuildinfo"
   ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
-    "build": "npm run clean && npm run build:js && npm run build:types",
-    "build:js": "swc src -d dist --strip-leading-paths --ignore **/*.test.ts,**/*.spec.ts,**/*.test.tsx,**/*.spec.tsx",
-    "build:types": "tsc -p tsconfig.lib.json",
+    "build": "npm run clean && npm run build:js && npm run build:types && npm run move-files",
+    "build:js": "swc src --out-dir dist/temp --config-file .swcrc",
+    "build:types": "tsc -p tsconfig.declarations.json",
+    "move-files": "cp dist/temp/src/index.* dist/ && mkdir -p dist/lib && cp dist/temp/src/lib/*.js dist/lib/ && cp dist/temp/src/lib/*.js.map dist/lib/ && rm -rf dist/temp && find dist/lib -name '*.spec.*' -delete",
     "clean": "rm -rf dist",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
     "lint": "eslint src --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
   },
   "peerDependencies": {
     "next": ">=13.0.0",
     "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": false
+    },
+    "react": {
+      "optional": false
+    }
   },
   "devDependencies": {
     "@swc/cli": "^0.4.0",
@@ -65,5 +91,10 @@
     "jsdom": "^25.0.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false
 }

@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
+import { render } from '@testing-library/react';
 
 // Mock the dependencies
 vi.mock('./next-navigation', () => ({
@@ -6,7 +8,7 @@ vi.mock('./next-navigation', () => ({
 }));
 
 vi.mock('./next-link', () => ({
-  NextLink: vi.fn(),
+  NextLink: vi.fn(() => React.createElement('a', { href: '#' }, 'Mock Link')),
 }));
 
 import { createNextNavigation } from './factory';
@@ -15,7 +17,7 @@ import { NextLink } from './next-link';
 import type { Routes } from './next-navigation';
 
 const mockUseNavigation = useNavigation as ReturnType<typeof vi.fn>;
-const mockNextLink = NextLink as ReturnType<typeof vi.fn>;
+const mockNextLink = vi.mocked(NextLink);
 
 describe('createNextNavigation', () => {
   const mockNavigationReturn = {
@@ -28,7 +30,6 @@ describe('createNextNavigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseNavigation.mockReturnValue(mockNavigationReturn);
-    mockNextLink.mockImplementation((props) => props);
   });
 
   it('should return useNavigation hook and NextLink component', () => {
@@ -42,7 +43,8 @@ describe('createNextNavigation', () => {
     expect(navigation).toHaveProperty('useNavigation');
     expect(navigation).toHaveProperty('NextLink');
     expect(typeof navigation.useNavigation).toBe('function');
-    expect(typeof navigation.NextLink).toBe('function');
+    expect(typeof navigation.NextLink).toBe('object'); // React component is an object
+    expect(navigation.NextLink.$$typeof).toBe(Symbol.for('react.forward_ref'));
   });
 
   it('should create useNavigation hook with provided config', () => {
@@ -76,12 +78,16 @@ describe('createNextNavigation', () => {
       children: 'Home Link',
     };
 
-    TypedNextLink(linkProps);
+    render(React.createElement(TypedNextLink, linkProps));
 
-    expect(mockNextLink).toHaveBeenCalledWith({
-      ...linkProps,
-      routes,
-    });
+    expect(mockNextLink).toHaveBeenCalledWith(
+      {
+        ...linkProps,
+        routes,
+        ref: null,
+      },
+      undefined
+    );
   });
 
   it('should create NextLink component with route parameters', () => {
@@ -99,14 +105,18 @@ describe('createNextNavigation', () => {
       children: 'User Profile',
     };
 
-    TypedNextLink(linkProps);
+    render(React.createElement(TypedNextLink, linkProps));
 
-    expect(mockNextLink).toHaveBeenCalledWith({
-      route: 'user',
-      id: '123',
-      children: 'User Profile',
-      routes,
-    });
+    expect(mockNextLink).toHaveBeenCalledWith(
+      {
+        route: 'user',
+        id: '123',
+        children: 'User Profile',
+        routes,
+        ref: null,
+      },
+      undefined
+    );
   });
 
   it('should handle config with enableProgress disabled', () => {
@@ -185,11 +195,15 @@ describe('createNextNavigation', () => {
       children: 'About',
     };
 
-    TypedNextLink(linkProps);
+    render(React.createElement(TypedNextLink, linkProps));
 
-    expect(mockNextLink).toHaveBeenCalledWith({
-      ...linkProps,
-      routes,
-    });
+    expect(mockNextLink).toHaveBeenCalledWith(
+      {
+        ...linkProps,
+        routes,
+        ref: null,
+      },
+      undefined
+    );
   });
 });

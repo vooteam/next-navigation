@@ -4,6 +4,8 @@ import NavigationDemo from './navigation-demo';
 import ProgressDemo from './components/ProgressDemo';
 import NavigationHookDemo from './components/NavigationDemo';
 import LinkDemo from './components/LinkDemo';
+import TypeScriptTest from './components/TypeScriptTest';
+import AutoCompleteTest from './components/AutoCompleteTest';
 import styles from './page.module.css';
 import { usePageLogger } from './hooks/usePageLogger';
 
@@ -108,6 +110,12 @@ export default function Page() {
 
         {/* Link Demo Section */}
         <LinkDemo />
+
+        {/* TypeScript Test Section */}
+        <TypeScriptTest />
+
+        {/* Auto-complete Test Section */}
+        <AutoCompleteTest />
 
         {/* Features Section */}
         <div

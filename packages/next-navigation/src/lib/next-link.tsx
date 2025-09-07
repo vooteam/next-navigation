@@ -1,18 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { Routes, NavigationParams, resolveRoute } from './next-navigation';
+import React from 'react';
+import { Routes, resolveRoute } from './next-navigation';
 
 export interface NextLinkProps<T extends Routes, K extends keyof T>
   extends Omit<React.ComponentProps<typeof Link>, 'href'> {
-  route: K | string;
+  route: K;
   routes?: T;
 }
 
-export function NextLink<T extends Routes, K extends keyof T>(
-  props: NextLinkProps<T, K> & Partial<NavigationParams<T, K>>
-) {
-  const { route, routes, ...rest } = props;
+export const NextLink = React.forwardRef<
+  HTMLAnchorElement,
+  NextLinkProps<Routes, string> & Record<string, unknown>
+>(function NextLink(props, ref) {
+  const { route, routes, children, ...rest } = props;
 
   const standardLinkProps = new Set([
     'children',
@@ -28,8 +30,6 @@ export function NextLink<T extends Routes, K extends keyof T>(
     'prefetch',
     'locale',
     'legacyBehavior',
-    'route',
-    'routes',
   ]);
 
   const routeParams: Record<string, unknown> = {};
@@ -43,7 +43,11 @@ export function NextLink<T extends Routes, K extends keyof T>(
     }
   });
 
-  const href = resolveRoute(routes, route, routeParams);
+  const href = resolveRoute(routes as Routes, route as string, routeParams);
 
-  return <Link {...linkProps} href={href} />;
-}
+  return (
+    <Link {...linkProps} href={href} ref={ref}>
+      {children as React.ReactNode}
+    </Link>
+  );
+});

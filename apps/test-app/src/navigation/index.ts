@@ -1,10 +1,10 @@
 'use client';
 
 import { createNextNavigation } from '@vooteam/next-navigation';
-import { routes } from './routes';
+import { routes, type AppRoutes } from './routes';
 
-// Create the typed navigation instance
-export const { useNavigation, NextLink } = createNextNavigation({
+// Create the typed navigation instance with explicit type
+export const { useNavigation, NextLink } = createNextNavigation<AppRoutes>({
   routes,
   enableProgress: true, // Enable progress indicator by default
 });

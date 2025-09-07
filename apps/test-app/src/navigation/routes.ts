@@ -8,32 +8,26 @@ export const routes = {
   // Dynamic routes with parameters
   product: {
     path: '/products/[productId]',
-    params: undefined as
-      | undefined
-      | {
-          productId: string;
-        },
+    params: {} as {
+      productId: string;
+    },
   },
 
   // Routes with typed parameters
   login: {
     path: '/login',
-    params: undefined as
-      | undefined
-      | {
-          returnUrl?: string;
-          source?: 'header' | 'footer' | 'modal';
-        },
+    params: {} as {
+      returnUrl?: string;
+      source?: 'header' | 'footer' | 'modal';
+    },
   },
 
   // API routes
   api: {
     path: '/api/hello',
-    params: undefined as
-      | undefined
-      | {
-          message?: string;
-        },
+    params: {} as {
+      message?: string;
+    },
   },
 } as const;
 

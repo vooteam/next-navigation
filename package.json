@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "cd apps/test-app && npm run dev",
+    "dev": "cd apps/test-app && pnpm run dev",
     "dev:lib": "nx build @vooteam/next-navigation --watch",
     "build": "nx build @vooteam/next-navigation",
     "build:app": "nx build @next-navigation/test-app",

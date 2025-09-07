@@ -30,12 +30,7 @@ vi.mock('./progress-provider', () => ({
 }));
 
 // Import after mocking
-import {
-  useNavigation,
-  resolveRoute,
-  type Routes,
-  type RouteWithParams,
-} from './next-navigation';
+import { useNavigation, resolveRoute, type Routes } from './next-navigation';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { useProgress } from './progress-provider';
@@ -306,7 +301,9 @@ describe('useNavigation', () => {
 
       const navigation = useNavigation({ routes });
 
-      const pushPromise = navigation.push('user', { id: '123' });
+      // TypeScript has trouble inferring route params correctly in this test context
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pushPromise = (navigation.push as any)('user', { id: '123' });
       vi.advanceTimersByTime(100);
       await pushPromise;
 
@@ -320,7 +317,11 @@ describe('useNavigation', () => {
 
       const navigation = useNavigation({ routes });
 
-      const pushPromise = navigation.push('user', { id: '123', scroll: false });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pushPromise = (navigation.push as any)('user', {
+        id: '123',
+        scroll: false,
+      });
       vi.advanceTimersByTime(100);
       await pushPromise;
 
@@ -348,7 +349,8 @@ describe('useNavigation', () => {
 
       const navigation = useNavigation({ routes });
 
-      const replacePromise = navigation.replace('post', {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const replacePromise = (navigation.replace as any)('post', {
         slug: 'my-post',
         scroll: true,
       });
@@ -386,7 +388,8 @@ describe('useNavigation', () => {
 
       const navigation = useNavigation({ routes });
 
-      const pushPromise = navigation.push('user', {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pushPromise = (navigation.push as any)('user', {
         id: '123',
         postId: '456',
         scroll: false,
@@ -417,6 +420,172 @@ describe('useNavigation', () => {
       await pushPromise;
 
       expect(mockPush).toHaveBeenCalledWith('/test', undefined);
+    });
+
+    it('should handle route with params and separate navigation options for push', async () => {
+      const routes: Routes = {
+        user: {
+          path: '/user/[id]',
+          params: { id: '' },
+        },
+      };
+
+      const navigation = useNavigation({ routes });
+
+      // This tests the two-argument case: params as first arg, options as second arg
+      // @ts-expect-error - Testing runtime behavior for args[1] coverage
+      const pushPromise = navigation.push(
+        'user',
+        { id: '123' },
+        { scroll: false }
+      );
+      vi.advanceTimersByTime(100);
+      await pushPromise;
+
+      expect(mockPush).toHaveBeenCalledWith('/user/123', {
+        scroll: false,
+      });
+    });
+
+    it('should handle route with params and separate navigation options for replace', async () => {
+      const routes: Routes = {
+        post: {
+          path: '/post/[slug]',
+          params: { slug: '' },
+        },
+      };
+
+      const navigation = useNavigation({ routes });
+
+      // This tests the two-argument case: params as first arg, options as second arg
+      // @ts-expect-error - Testing runtime behavior for args[1] coverage
+      const replacePromise = navigation.replace(
+        'post',
+        { slug: 'test-post' },
+        { scroll: true }
+      );
+      vi.advanceTimersByTime(100);
+      await replacePromise;
+
+      expect(mockReplace).toHaveBeenCalledWith('/post/test-post', {
+        scroll: true,
+      });
+    });
+
+    it('should handle pure navigation options without route params for push', async () => {
+      const navigation = useNavigation();
+
+      const pushPromise = navigation.push('/simple-route', { scroll: false });
+      vi.advanceTimersByTime(100);
+      await pushPromise;
+
+      expect(mockPush).toHaveBeenCalledWith('/simple-route', {
+        scroll: false,
+      });
+    });
+
+    it('should handle pure navigation options without route params for replace', async () => {
+      const navigation = useNavigation();
+
+      const replacePromise = navigation.replace('/simple-route', {
+        scroll: true,
+      });
+      vi.advanceTimersByTime(100);
+      await replacePromise;
+
+      expect(mockReplace).toHaveBeenCalledWith('/simple-route', {
+        scroll: true,
+      });
+    });
+
+    it('should handle route parameters when route config has no params defined for push', async () => {
+      const routes: Routes = {
+        // Route without params property defined
+        product: '/product/[id]',
+      };
+
+      const navigation = useNavigation({ routes });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pushPromise = (navigation.push as any)('product', {
+        id: '123',
+        scroll: false,
+      });
+      vi.advanceTimersByTime(100);
+      await pushPromise;
+
+      expect(mockPush).toHaveBeenCalledWith('/product/[id]', {
+        scroll: false,
+      });
+    });
+
+    it('should handle route parameters when route config has no params defined for replace', async () => {
+      const routes: Routes = {
+        // Route without params property defined
+        category: '/category/[slug]',
+      };
+
+      const navigation = useNavigation({ routes });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const replacePromise = (navigation.replace as any)('category', {
+        slug: 'electronics',
+        scroll: true,
+      });
+      vi.advanceTimersByTime(100);
+      await replacePromise;
+
+      expect(mockReplace).toHaveBeenCalledWith('/category/[slug]', {
+        scroll: true,
+      });
+    });
+
+    it('should handle extra parameters not defined in route params for push', async () => {
+      const routes: Routes = {
+        user: {
+          path: '/user/[id]',
+          params: { id: '' }, // Only id is defined
+        },
+      };
+
+      const navigation = useNavigation({ routes });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pushPromise = (navigation.push as any)('user', {
+        id: '123',
+        name: 'john', // Extra param not in route definition
+        scroll: false,
+      });
+      vi.advanceTimersByTime(100);
+      await pushPromise;
+
+      expect(mockPush).toHaveBeenCalledWith('/user/123', {
+        scroll: false,
+      });
+    });
+
+    it('should handle extra parameters not defined in route params for replace', async () => {
+      const routes: Routes = {
+        post: {
+          path: '/post/[slug]',
+          params: { slug: '' }, // Only slug is defined
+        },
+      };
+
+      const navigation = useNavigation({ routes });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const replacePromise = (navigation.replace as any)('post', {
+        slug: 'my-article',
+        author: 'jane', // Extra param not in route definition
+        scroll: true,
+      });
+      vi.advanceTimersByTime(100);
+      await replacePromise;
+
+      expect(mockReplace).toHaveBeenCalledWith('/post/my-article', {
+        scroll: true,
+      });
     });
   });
 
