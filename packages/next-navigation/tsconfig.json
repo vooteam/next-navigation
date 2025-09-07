@@ -12,7 +12,12 @@
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "composite": true
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": "."
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [
@@ -21,6 +26,7 @@
     "**/*.test.ts",
     "**/*.spec.ts",
     "**/*.test.tsx",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "src/test-setup.ts"
   ]
 }

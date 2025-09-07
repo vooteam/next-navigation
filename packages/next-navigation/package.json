@@ -62,7 +62,7 @@
   "scripts": {
     "build": "npm run clean && npm run build:js && npm run build:types && npm run move-files",
     "build:js": "swc src --out-dir dist/temp --config-file .swcrc",
-    "build:types": "tsc -p tsconfig.declarations.json",
+    "build:types": "tsc",
     "move-files": "cp dist/temp/src/index.* dist/ && mkdir -p dist/lib && cp dist/temp/src/lib/*.js dist/lib/ && cp dist/temp/src/lib/*.js.map dist/lib/ && rm -rf dist/temp && find dist/lib -name '*.spec.*' -delete",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts,.tsx",
