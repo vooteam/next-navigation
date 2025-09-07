@@ -8,14 +8,12 @@ import React, {
   useEffect,
 } from 'react';
 
-// Progress context interface
 interface ProgressContextType {
   start: () => void;
   complete: () => void;
   isLoading: boolean;
 }
 
-// Progress provider props
 interface ProgressProviderProps {
   children: React.ReactNode;
   config?: {
@@ -28,7 +26,6 @@ interface ProgressProviderProps {
   };
 }
 
-// Default progress bar styles
 const defaultConfig = {
   color: '#3b82f6',
   height: 3,
@@ -40,7 +37,6 @@ const defaultConfig = {
 
 const ProgressContext = createContext<ProgressContextType | null>(null);
 
-// Built-in progress bar component
 const ProgressBar: React.FC<{
   isLoading: boolean;
   config: typeof defaultConfig;
@@ -80,7 +76,7 @@ const ProgressBar: React.FC<{
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
           zIndex: 9999,
           transition: 'opacity 0.2s ease',
-          opacity: isLoading || progress > 0 ? 1 : 0,
+          opacity: 1, // Always 1 since we only render when isLoading || progress > 0
         }}
       >
         <div
@@ -162,14 +158,9 @@ export function ProgressProvider({
 export function useProgress(): ProgressContextType {
   const context = useContext(ProgressContext);
   if (!context) {
-    // Return a no-op implementation if provider is not found
     return {
-      start: () => {
-        // No-op when provider is not available
-      },
-      complete: () => {
-        // No-op when provider is not available
-      },
+      start: () => void 0,
+      complete: () => void 0,
       isLoading: false,
     };
   }
