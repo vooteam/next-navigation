@@ -1,19 +1,17 @@
 import '@testing-library/jest-dom';
 
-// Mock ResizeObserver which is not available in jsdom
 global.ResizeObserver = class ResizeObserver {
   observe() {
-    // Mock implementation
+    return void 0;
   }
   unobserve() {
-    // Mock implementation
+    return void 0;
   }
   disconnect() {
-    // Mock implementation
+    return void 0;
   }
 };
 
-// Mock requestAnimationFrame which is not available in jsdom
 global.requestAnimationFrame = (callback: FrameRequestCallback): number => {
   return setTimeout(callback, 0);
 };
@@ -22,7 +20,6 @@ global.cancelAnimationFrame = (id: number): void => {
   clearTimeout(id);
 };
 
-// Mock performance.now for timing tests
 Object.defineProperty(global.performance, 'now', {
   writable: true,
   value: () => Date.now(),

@@ -92,60 +92,67 @@ export function useNavigation<T extends Routes = Routes>(
 
   const enableProgress = config?.enableProgress ?? true;
 
-  const push = useCallback(
-    async (route: string, ...args: unknown[]): Promise<void> => {
+  const parseNavigationArgs = useCallback(
+    (route: string, args: unknown[]) => {
+      const params: Record<string, unknown> = {};
+      const options: NavigationOptions = {};
+
+      if (args.length > 0) {
+        const firstArg = args[0];
+
+        if (firstArg && typeof firstArg === 'object') {
+          const routeConfig = config?.routes?.[route];
+          const routeParams =
+            routeConfig &&
+            typeof routeConfig === 'object' &&
+            'params' in routeConfig
+              ? routeConfig.params
+              : {};
+
+          const navigationOptionKeys = new Set(['scroll']);
+
+          Object.entries(firstArg as Record<string, unknown>).forEach(
+            ([key, value]) => {
+              if (navigationOptionKeys.has(key)) {
+                (options as Record<string, unknown>)[key] = value;
+              } else if (
+                routeParams &&
+                typeof routeParams === 'object' &&
+                key in routeParams
+              ) {
+                params[key] = value;
+              } else {
+                params[key] = value;
+              }
+            }
+          );
+
+          if (args[1] && typeof args[1] === 'object') {
+            Object.assign(options, args[1] as NavigationOptions);
+          }
+        }
+      }
+
+      return { params, options };
+    },
+    [config?.routes]
+  );
+
+  const createNavigationPromise = useCallback(
+    (
+      navigateFn: (url: string, options?: Record<string, unknown>) => void,
+      route: string,
+      args: unknown[]
+    ): Promise<void> => {
       return new Promise<void>((resolve) => {
         if (enableProgress) {
           progress.start();
         }
 
         startTransition(() => {
-          const params: Record<string, unknown> = {};
-          const options: NavigationOptions = {};
-
-          // Parse arguments based on their type
-          if (args.length > 0) {
-            const firstArg = args[0];
-
-            if (firstArg && typeof firstArg === 'object') {
-              // Check if this route exists in config and has route params
-              const routeConfig = config?.routes?.[route];
-              const routeParams =
-                routeConfig &&
-                typeof routeConfig === 'object' &&
-                'params' in routeConfig
-                  ? routeConfig.params
-                  : {};
-
-              // Separate route parameters from navigation options
-              const navigationOptionKeys = new Set(['scroll']);
-
-              Object.entries(firstArg as Record<string, unknown>).forEach(
-                ([key, value]) => {
-                  if (navigationOptionKeys.has(key)) {
-                    (options as Record<string, unknown>)[key] = value;
-                  } else if (
-                    routeParams &&
-                    typeof routeParams === 'object' &&
-                    key in routeParams
-                  ) {
-                    params[key] = value;
-                  } else {
-                    // If route params not defined or key not found in route params, treat as route param
-                    params[key] = value;
-                  }
-                }
-              );
-
-              // If we have a second argument, it should be navigation options
-              if (args[1] && typeof args[1] === 'object') {
-                Object.assign(options, args[1] as NavigationOptions);
-              }
-            }
-          }
-
+          const { params, options } = parseNavigationArgs(route, args);
           const url = resolveRoute(config?.routes, route, params);
-          // Filter out undefined values from options before passing to router
+          
           const filteredOptions = Object.fromEntries(
             Object.entries(options).filter(([, value]) => value !== undefined)
           );
@@ -153,7 +160,8 @@ export function useNavigation<T extends Routes = Routes>(
             Object.keys(filteredOptions).length > 0
               ? filteredOptions
               : undefined;
-          router.push(url, routerOptions);
+              
+          navigateFn(url, routerOptions);
 
           setTimeout(() => {
             if (enableProgress) {
@@ -164,82 +172,21 @@ export function useNavigation<T extends Routes = Routes>(
         });
       });
     },
-    [router, progress, enableProgress, config?.routes]
+    [parseNavigationArgs, config?.routes, enableProgress, progress, startTransition]
+  );
+
+  const push = useCallback(
+    async (route: string, ...args: unknown[]): Promise<void> => {
+      return createNavigationPromise(router.push, route, args);
+    },
+    [router.push, createNavigationPromise]
   );
 
   const replace = useCallback(
     async (route: string, ...args: unknown[]): Promise<void> => {
-      return new Promise<void>((resolve) => {
-        if (enableProgress) {
-          progress.start();
-        }
-
-        startTransition(() => {
-          const params: Record<string, unknown> = {};
-          const options: NavigationOptions = {};
-
-          // Parse arguments based on their type
-          if (args.length > 0) {
-            const firstArg = args[0];
-
-            if (firstArg && typeof firstArg === 'object') {
-              // Check if this route exists in config and has route params
-              const routeConfig = config?.routes?.[route];
-              const routeParams =
-                routeConfig &&
-                typeof routeConfig === 'object' &&
-                'params' in routeConfig
-                  ? routeConfig.params
-                  : {};
-
-              // Separate route parameters from navigation options
-              const navigationOptionKeys = new Set(['scroll']);
-
-              Object.entries(firstArg as Record<string, unknown>).forEach(
-                ([key, value]) => {
-                  if (navigationOptionKeys.has(key)) {
-                    (options as Record<string, unknown>)[key] = value;
-                  } else if (
-                    routeParams &&
-                    typeof routeParams === 'object' &&
-                    key in routeParams
-                  ) {
-                    params[key] = value;
-                  } else {
-                    // If route params not defined or key not found in route params, treat as route param
-                    params[key] = value;
-                  }
-                }
-              );
-
-              // If we have a second argument, it should be navigation options
-              if (args[1] && typeof args[1] === 'object') {
-                Object.assign(options, args[1] as NavigationOptions);
-              }
-            }
-          }
-
-          const url = resolveRoute(config?.routes, route, params);
-          // Filter out undefined values from options before passing to router
-          const filteredOptions = Object.fromEntries(
-            Object.entries(options).filter(([, value]) => value !== undefined)
-          );
-          const routerOptions =
-            Object.keys(filteredOptions).length > 0
-              ? filteredOptions
-              : undefined;
-          router.replace(url, routerOptions);
-
-          setTimeout(() => {
-            if (enableProgress) {
-              progress.complete();
-            }
-            resolve();
-          }, 100);
-        });
-      });
+      return createNavigationPromise(router.replace, route, args);
     },
-    [router, progress, enableProgress, config?.routes]
+    [router.replace, createNavigationPromise]
   );
 
   const back = useCallback(async (): Promise<void> => {

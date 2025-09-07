@@ -14,19 +14,21 @@ interface ProgressContextType {
   isLoading: boolean;
 }
 
-interface ProgressProviderProps {
-  children: React.ReactNode;
-  config?: {
-    color?: string;
-    height?: number;
-    showSpinner?: boolean;
-    easing?: string;
-    speed?: number;
-    shadow?: boolean;
-  };
+interface ProgressConfig {
+  color?: string;
+  height?: number;
+  showSpinner?: boolean;
+  easing?: string;
+  speed?: number;
+  shadow?: boolean;
 }
 
-const defaultConfig = {
+interface ProgressProviderProps {
+  children: React.ReactNode;
+  config?: ProgressConfig;
+}
+
+const DEFAULT_CONFIG: Required<ProgressConfig> = {
   color: '#3b82f6',
   height: 3,
   showSpinner: true,
@@ -39,22 +41,20 @@ const ProgressContext = createContext<ProgressContextType | null>(null);
 
 const ProgressBar: React.FC<{
   isLoading: boolean;
-  config: typeof defaultConfig;
+  config: Required<ProgressConfig>;
 }> = ({ isLoading, config }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (isLoading) {
       setProgress(0);
-      const timer = setTimeout(() => setProgress(30), 50);
-      const timer2 = setTimeout(() => setProgress(60), 200);
-      const timer3 = setTimeout(() => setProgress(80), 400);
+      const timers = [
+        setTimeout(() => setProgress(30), 50),
+        setTimeout(() => setProgress(60), 200),
+        setTimeout(() => setProgress(80), 400),
+      ];
 
-      return () => {
-        clearTimeout(timer);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-      };
+      return () => timers.forEach(clearTimeout);
     } else {
       setProgress(100);
       const timer = setTimeout(() => setProgress(0), 200);
@@ -63,6 +63,25 @@ const ProgressBar: React.FC<{
   }, [isLoading]);
 
   if (!isLoading && progress === 0) return null;
+
+  const progressBarStyle = {
+    height: '100%',
+    backgroundColor: config.color,
+    width: `${progress}%`,
+    transition: `width ${config.speed}ms ${config.easing}`,
+    boxShadow: config.shadow
+      ? `0 0 10px ${config.color}, 0 0 20px ${config.color}`
+      : 'none',
+  };
+
+  const spinnerStyle = {
+    width: '20px',
+    height: '20px',
+    border: `2px solid ${config.color}`,
+    borderTop: '2px solid transparent',
+    borderRadius: '50%',
+    animation: 'progress-spin 1s linear infinite',
+  };
 
   return (
     <>
@@ -76,20 +95,14 @@ const ProgressBar: React.FC<{
           backgroundColor: 'rgba(59, 130, 246, 0.1)',
           zIndex: 9999,
           transition: 'opacity 0.2s ease',
-          opacity: 1, // Always 1 since we only render when isLoading || progress > 0
+          opacity: 1,
         }}
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
       >
-        <div
-          style={{
-            height: '100%',
-            backgroundColor: config.color,
-            width: `${progress}%`,
-            transition: `width ${config.speed}ms ${config.easing}`,
-            boxShadow: config.shadow
-              ? `0 0 10px ${config.color}, 0 0 20px ${config.color}`
-              : 'none',
-          }}
-        />
+        <div style={progressBarStyle} />
       </div>
       {config.showSpinner && isLoading && (
         <div
@@ -100,16 +113,7 @@ const ProgressBar: React.FC<{
             zIndex: 9999,
           }}
         >
-          <div
-            style={{
-              width: '20px',
-              height: '20px',
-              border: `2px solid ${config.color}`,
-              borderTop: '2px solid transparent',
-              borderRadius: '50%',
-              animation: 'progress-spin 1s linear infinite',
-            }}
-          />
+          <div style={spinnerStyle} />
         </div>
       )}
       <style
@@ -131,7 +135,7 @@ export function ProgressProvider({
   config = {},
 }: ProgressProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const finalConfig = { ...defaultConfig, ...config };
+  const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
   const start = useCallback(() => {
     setIsLoading(true);
