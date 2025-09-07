@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import React from 'react';
 
 // Import the actual components

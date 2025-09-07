@@ -432,11 +432,11 @@ describe('useNavigation', () => {
 
       const navigation = useNavigation({ routes });
 
-      // This tests the two-argument case: params as first arg, options as second arg
-      // @ts-expect-error - Testing runtime behavior for args[1] coverage
+      // This tests the three-argument runtime case beyond TypeScript interface
       const pushPromise = navigation.push(
         'user',
         { id: '123' },
+        // @ts-expect-error - Testing undocumented 3-argument runtime behavior
         { scroll: false }
       );
       vi.advanceTimersByTime(100);
@@ -457,11 +457,11 @@ describe('useNavigation', () => {
 
       const navigation = useNavigation({ routes });
 
-      // This tests the two-argument case: params as first arg, options as second arg
-      // @ts-expect-error - Testing runtime behavior for args[1] coverage
+      // This tests the three-argument runtime case beyond TypeScript interface  
       const replacePromise = navigation.replace(
         'post',
         { slug: 'test-post' },
+        // @ts-expect-error - Testing undocumented 3-argument runtime behavior
         { scroll: true }
       );
       vi.advanceTimersByTime(100);
