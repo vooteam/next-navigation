@@ -35,15 +35,16 @@ export default function TypeScriptTest() {
       </p>
       <ul style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>
         <li>
-          <code>navigation.push('</code> - should suggest route names
+          <code>navigation.push(&apos;</code> - should suggest route names
         </li>
         <li>
-          <code>navigation.push('product', {'{'}</code> - should suggest
-          productId
+          <code>navigation.push(&apos;product&apos;, {'{'}</code> - should
+          suggest productId
         </li>
         <li>
-          <code>navigation.push('login', {'{'} source: '</code> - should suggest
-          'header' | 'footer' | 'modal'
+          <code>navigation.push(&apos;login&apos;, {'{'} source: &apos;</code> -
+          should suggest &apos;header&apos; | &apos;footer&apos; |
+          &apos;modal&apos;
         </li>
       </ul>
 

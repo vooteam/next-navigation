@@ -216,8 +216,8 @@ export default function ProgressDemo() {
           color: '#6b7280',
         }}
       >
-        <strong>Note:</strong> You'll see different colored progress bars at the
-        top:
+        <strong>Note:</strong> You&apos;ll see different colored progress bars
+        at the top:
         <br />• <span style={{ color: '#10b981' }}>Green</span>: Our built-in
         progress provider
         <br />• <span style={{ color: '#3b82f6' }}>Blue</span>: NextTopLoader

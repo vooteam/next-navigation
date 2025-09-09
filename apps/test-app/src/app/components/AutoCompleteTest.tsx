@@ -29,9 +29,12 @@ export default function AutoCompleteTest() {
       <h3>🔧 Auto-completion Status Test</h3>
       <p>If auto-completion is working, your IDE should:</p>
       <ul>
-        <li>✅ Suggest route names when typing: navigation.push('')</li>
         <li>
-          ✅ Suggest parameters when typing: navigation.push('product', {'{'}...
+          ✅ Suggest route names when typing: navigation.push(&apos;&apos;)
+        </li>
+        <li>
+          ✅ Suggest parameters when typing:
+          navigation.push(&apos;product&apos;, {'{'}...
           {'}'}
         </li>
         <li>✅ Show errors for invalid route names or parameters</li>
@@ -51,7 +54,7 @@ export default function AutoCompleteTest() {
             marginTop: '0.5rem',
           }}
         >
-          navigation.push('|'){' '}
+          navigation.push(&apos;|&apos;){' '}
           {/* Place cursor after the quote to see auto-completion */}
         </code>
         <code

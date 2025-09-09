@@ -17,13 +17,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@vooteam/next-navigation": [
-        "../../packages/next-navigation/src/index.ts"
-      ]
+      "@/*": ["./src/*"]
     },
     "outDir": "dist",
-    "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": [

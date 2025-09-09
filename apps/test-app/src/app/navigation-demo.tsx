@@ -144,7 +144,7 @@ export default function NavigationDemo() {
             <path d="M13 3l3.293 3.293-7 7 1.414 1.414 7-7L21 11V3z" />
             <path d="M19 19H5V5h7l-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2v-5l-2-2v7z" />
           </svg>
-          navigation.push('/about')
+          navigation.push(&apos;/about&apos;)
         </button>
 
         <button
@@ -194,7 +194,7 @@ export default function NavigationDemo() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
           </svg>
-          navigation.replace('/login')
+          navigation.replace(&apos;/login&apos;)
         </button>
 
         <button
