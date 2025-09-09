@@ -1,6 +1,6 @@
 {
   "name": "@vooteam/next-navigation",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "A powerful, type-safe Next.js navigation library with async router operations, built-in progress indicators, and seamless TypeScript integration.",
   "author": {
     "name": "VooTeam",
