@@ -6,9 +6,11 @@ Initial release of @vooteam/next-navigation package
 
 This release includes:
 
-- Authentication session management with AuthSession class
-- Configuration utilities with createAuthConfig function
-- React integration with useAuthState hook
-- TypeScript support and comprehensive type definitions
-- Next.js environment integration
-- Support for OAuth and credentials providers
+- Type-safe Next.js navigation with async router operations
+- Built-in progress indicators for navigation transitions
+- Custom NextLink component with enhanced functionality
+- Progress provider for global navigation state management
+- React hooks for navigation state and page logging
+- Full TypeScript support with comprehensive type definitions
+- Next.js App Router integration
+- Seamless compatibility with Next.js 13+ and React 18+
